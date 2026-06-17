@@ -551,5 +551,7 @@ Please provide a helpful answer following these guidelines."""
 
 
 if __name__ == '__main__':
-    debug = os.getenv('DEBUG', 'True').lower() == 'true'
-    app.run(debug=debug, host='0.0.0.0', port=5000)
+    # debug = os.getenv('DEBUG', 'True').lower() == 'true'
+    # app.run(debug=debug, host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
