@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Briefly</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='asset/ailogo.png') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-white">
+    <!-- Login/Register Modal -->
+    <div id="authModal" class="modal fade" tabindex="-1" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title w-100 text-center">
+                        <i class="fas fa-sparkles text-success me-2"></i>Briefly
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button">Login</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button">Register</button>
+                        </li>
+                    </ul>
+
+                    <!-- Login Form -->
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="login">
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label for="loginUsername" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="loginUsername" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="loginPassword" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="loginPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Login</button>
+                                <div id="loginError" class="alert alert-danger mt-2" style="display: none;"></div>
+                            </form>
+                        </div>
+
+                        <!-- Register Form -->
+                        <div class="tab-pane fade" id="register">
+                            <form id="registerForm">
+                                <div class="mb-3">
+                                    <label for="regName" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="regName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="regEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="regEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="regPassword" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="regPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Register</button>
+                                <div id="registerError" class="alert alert-danger mt-2" style="display: none;"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-wrapper d-flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar bg-dark text-white border-end d-flex flex-column">
+            <div class="sidebar-header">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="logo-icon-small">
+                            <img src="{{ url_for('static', filename='asset/ailogo.png') }}" alt="Briefly Logo" style="width: 30px; height: 30px;">
+                        </div>
+                        <h6 class="mb-0 text-white">Briefly</h6>
+                    </div>
+                    <button class="btn btn-sm btn-outline-light d-md-none" id="closeSidebarBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <button class="btn btn-sm btn-success w-100" id="newChatBtn">
+                    <i class="fas fa-plus me-2"></i>New Chat
+                </button>
+            </div>
+
+            <div class="conversations-list" id="conversationsSection">
+                <div class="conversations-header">
+                    <small>Conversations</small>
+                </div>
+                <div class="search-box mb-2">
+                    <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search conversations...">
+                </div>
+                <div id="conversationsList" class="conversations-items">
+                    <!-- Conversations will be loaded here -->
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div id="chatLimitSection" class="chat-limit-section mb-2" style="display: none;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>Free chats used</small>
+                        <small id="chatLimitText">0/5</small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div id="chatLimitBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="feature-buttons mb-2">
+                    <button class="btn btn-sm btn-primary w-100" id="uploadDocBtn">
+                        <i class="fas fa-upload me-2"></i>Upload Document
+                    </button>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary w-100" id="sidebarLoginBtn" style="display: none;">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+                <button class="btn btn-sm btn-outline-secondary w-100" id="sidebarLogoutBtn">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-main flex-grow-1 d-flex flex-column">
+            <!-- Header -->
+            <header class="header-section border-bottom">
+                <div class="d-flex align-items-center justify-content-between px-4 py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="toggleSidebar" class="btn btn-sm btn-outline-secondary d-md-none">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="mb-0 fs-6 fw-600">Briefly AI</h1>
+                    </div>
+                    <div class="profile-section position-relative">
+                        <button class="btn btn-sm btn-outline-secondary" id="profileBtn" title="Profile">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="username" class="ms-2"></span>
+                            <i class="fas fa-chevron-down ms-2" style="font-size: 0.7rem;"></i>
+                        </button>
+                        <div class="dropdown-menu position-absolute end-0" id="profileDropdown" style="display: none;">
+                            <div class="dropdown-item-text px-3 py-2">
+                                <small class="text-muted">Logged in as</small>
+                                <div class="fw-bold" id="dropdownUsername"></div>
+                            </div>
+                            <hr class="my-1">
+                            <a class="dropdown-item" href="#" id="settingsBtn">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a>
+                            <a class="dropdown-item" href="#" id="dropdownLogoutBtn">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Messages Container -->
+            <div id="chatContainer" class="chat-messages flex-grow-1 overflow-y-auto px-4 py-5">
+                <!-- Welcome Message -->
+                <div class="welcome-section text-center text-muted mb-5">
+                    <div class="welcome-icon mb-4">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h2 class="fs-5 fw-600 mb-2 text-dark">Welcome to Briefly </h2>
+                    <p class="mb-0">Ask me anything, and I'll do my best to help</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-section border-top bg-white px-4 py-4">
+                <div class="input-wrapper">
+                    <div class="input-box d-flex gap-2 align-items-flex-end">
+                        <div class="flex-grow-1">
+                            <textarea 
+                                id="messageInput" 
+                                class="form-control message-input" 
+                                placeholder="Ask anything..."
+                                rows="1"
+                                autocomplete="off"
+                                spellcheck="true"
+                            ></textarea>
+                        </div>
+                        <button 
+                            class="btn btn-send p-0" 
+                            type="button" 
+                            id="sendBtn"
+                            title="Send message"
+                        >
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                    </div>
+                    <div class="input-hint text-center mt-3">
+                        <small class="text-muted">Press Enter to send • Shift+Enter for new line</small>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="errorToast" class="toast" role="alert">
+            <div class="toast-header bg-danger text-white">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong class="me-auto">Error</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="errorToastMessage">
+                An error occurred
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal fade" tabindex="-1" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">
+                        <i class="fas fa-cog text-primary me-2"></i>Settings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profileSettings" type="button">Profile</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#passwordSettings" type="button">Change Password</button>
+                        </li>
+                    </ul>
+
+                    <!-- Profile Settings -->
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="profileSettings">
+                            <form id="profileForm">
+                                <div class="mb-3">
+                                    <label for="profileName" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="profileName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profileEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="profileEmail" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profileMobile" class="form-label">Mobile Number</label>
+                                    <input type="tel" class="form-control" id="profileMobile" placeholder="+1234567890">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profileDob" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="profileDob">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+                                <div id="profileError" class="alert alert-danger mt-2" style="display: none;"></div>
+                                <div id="profileSuccess" class="alert alert-success mt-2" style="display: none;"></div>
+                            </form>
+                        </div>
+
+                        <!-- Password Settings -->
+                        <div class="tab-pane fade" id="passwordSettings">
+                            <form id="passwordForm">
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Change Password</button>
+                                <div id="passwordError" class="alert alert-danger mt-2" style="display: none;"></div>
+                                <div id="passwordSuccess" class="alert alert-success mt-2" style="display: none;"></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Document Modal -->
+    <div id="uploadDocModal" class="modal fade" tabindex="-1" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">
+                        <i class="fas fa-upload text-primary me-2"></i>Upload Document
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadDocForm">
+                        <div class="mb-3">
+                            <label for="docFile" class="form-label">Select Document</label>
+                            <input type="file" class="form-control" id="docFile" accept=".pdf,.doc,.docx,.txt" required>
+                            <small class="text-muted">Supported formats: PDF, DOC, DOCX, TXT</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="docName" class="form-label">Document Name (optional)</label>
+                            <input type="text" class="form-control" id="docName" placeholder="Enter a name for this document">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-upload me-2"></i>Upload & Summarize
+                        </button>
+                        <div id="uploadDocError" class="alert alert-danger mt-2" style="display: none;"></div>
+                        <div id="uploadDocSuccess" class="alert alert-success mt-2" style="display: none;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Document Modal -->
+    <div id="generateDocModal" class="modal fade" tabindex="-1" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-alt text-info me-2"></i>Generate Document
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="generateDocForm">
+                        <div class="mb-3">
+                            <label for="docType" class="form-label">Document Type</label>
+                            <select class="form-select" id="docType" required>
+                                <option value="">Select type...</option>
+                                <option value="bill">Bill/Invoice</option>
+                                <option value="report">Report</option>
+                                <option value="letter">Letter</option>
+                                <option value="summary">Summary</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="docFormat" class="form-label">Output Format</label>
+                            <select class="form-select" id="docFormat" required>
+                                <option value="">Select format...</option>
+                                <option value="txt">Text (.txt)</option>
+                                <option value="markdown">Markdown (.md)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="docData" class="form-label">Data / Instructions</label>
+                            <textarea class="form-control" id="docData" rows="5" placeholder="Enter the data or instructions for document generation..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info w-100">
+                            <i class="fas fa-file-alt me-2"></i>Generate Document
+                        </button>
+                        <div id="generateDocError" class="alert alert-danger mt-2" style="display: none;"></div>
+                        <div id="generateDocSuccess" class="alert alert-success mt-2" style="display: none;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "simple_responses": {
+    "hello": "Hello! How can I help you today?",
+    "hi": "Hi there! What can I assist you with?",
+    "hey": "Hey! How can I help you?",
+    "how are you": "I'm doing great, thank you for asking! How can I assist you today?",
+    "how are you doing": "I'm doing well! What can I help you with?",
+    "who are you": "I'm Briefly AI, an AI assistant designed to help you with your questions and tasks. I'm powered by Google's Gemini AI model with RAG (Retrieval-Augmented Generation) capabilities.",
+    "what is your name": "My name is Briefly AI. I'm an AI assistant here to help you!",
+    "what can you do": "I can help you with a variety of tasks including answering questions, providing information, helping with code, explaining concepts, and much more. I use advanced AI capabilities to provide helpful and accurate responses.",
+    "what are you": "I'm Briefly AI, an AI assistant powered by Google's Gemini AI model with RAG capabilities to provide intelligent and context-aware responses.",
+    "good morning": "Good morning! How can I help you start your day?",
+    "good afternoon": "Good afternoon! What can I assist you with?",
+    "good evening": "Good evening! How can I help you?",
+    "good night": "Good night! Feel free to come back anytime you need help.",
+    "thanks": "You're welcome! Is there anything else I can help you with?",
+    "thank you": "You're welcome! Let me know if you need anything else.",
+    "bye": "Goodbye! Feel free to come back anytime you need assistance.",
+    "goodbye": "Goodbye! Have a great day!",
+    "help": "I'm here to help! You can ask me questions, request information, get help with code, or just have a conversation. What would you like to know?",
+    "what can i ask you": "You can ask me anything! I can help with general knowledge, explain concepts, assist with coding, provide information, answer questions, and much more. Just type your question and I'll do my best to help.",
+    "are you real": "I'm an AI assistant, so I'm not a human, but I'm here to help you with real information and assistance!",
+    "are you human": "I'm an AI assistant, not a human. I'm designed to help you with information and tasks using advanced AI capabilities."
+  }
+}
