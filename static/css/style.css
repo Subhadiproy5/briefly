@@ -514,6 +514,159 @@ html, body {
     margin-bottom: 0.25rem;
 }
 
+/* Document Analyzer View Styling */
+.document-analyzer-view {
+    display: none;
+    flex: 1;
+    background-color: white;
+    overflow: hidden;
+}
+
+.document-analyzer-container {
+    max-width: 100%;
+    padding: 2rem;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.doc-upload-section {
+    display: block;
+    padding: 2rem 0;
+}
+
+.upload-area {
+    text-align: left;
+    padding: 2rem;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    background-color: #f9fafb;
+    max-width: 100%;
+    width: 100%;
+}
+
+.upload-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.upload-area h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.upload-area p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.doc-analysis-section {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.doc-analysis-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.doc-analysis-header h3 {
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+}
+
+.doc-search-bar {
+    margin-bottom: 2rem;
+}
+
+.doc-summary-section {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.doc-summary-section h5 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.doc-content {
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.doc-content .search-highlight {
+    background-color: #ffeb3b;
+    padding: 0.1rem 0.2rem;
+    border-radius: 2px;
+    font-weight: 500;
+}
+
+.doc-topics-section {
+    margin-bottom: 2rem;
+}
+
+.doc-topics-section h5 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.doc-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.doc-chat-section {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.doc-chat-section h5 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.doc-chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.doc-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.doc-chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.doc-chat-messages::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+}
+
+.doc-chat-messages::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
+}
+
+.doc-chat-input {
+    margin-top: 1rem;
+}
+
 /* Input Section */
 .input-section {
     background-color: white;

@@ -103,6 +103,19 @@
                 </div>
             </div>
 
+            <div class="conversations-list" id="documentAnalyzerSection">
+                <div class="conversations-header">
+                    <small>Document Analyzer</small>
+                </div>
+                <div id="documentAnalyzerList" class="conversations-items">
+                    <div class="conversation-item active" id="documentAnalyzerMenuItem">
+                        <div class="conversation-title">
+                            <i class="fas fa-file-alt me-2"></i>Document Analyzer
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="sidebar-footer">
                 <div id="chatLimitSection" class="chat-limit-section mb-2" style="display: none;">
                     <div class="d-flex justify-content-between mb-1">
@@ -112,11 +125,6 @@
                     <div class="progress" style="height: 6px;">
                         <div id="chatLimitBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
                     </div>
-                </div>
-                <div class="feature-buttons mb-2">
-                    <button class="btn btn-sm btn-primary w-100" id="uploadDocBtn">
-                        <i class="fas fa-upload me-2"></i>Upload Document
-                    </button>
                 </div>
                 <button class="btn btn-sm btn-outline-secondary w-100" id="sidebarLoginBtn" style="display: none;">
                     <i class="fas fa-sign-in-alt me-2"></i>Login
@@ -136,7 +144,7 @@
                         <button id="toggleSidebar" class="btn btn-sm btn-outline-secondary d-md-none">
                             <i class="fas fa-bars"></i>
                         </button>
-                        <h1 class="mb-0 fs-6 fw-600">Briefly AI</h1>
+                        <h1 class="mb-0 fs-6 fw-600" id="headerTitle">Briefly AI</h1>
                     </div>
                     <div class="profile-section position-relative">
                         <button class="btn btn-sm btn-outline-secondary" id="profileBtn" title="Profile">
@@ -170,6 +178,91 @@
                     </div>
                     <h2 class="fs-5 fw-600 mb-2 text-dark">Welcome to Briefly </h2>
                     <p class="mb-0">Ask me anything, and I'll do my best to help</p>
+                </div>
+            </div>
+
+            <!-- Document Analyzer View -->
+            <div id="documentAnalyzerView" class="document-analyzer-view">
+                <div class="document-analyzer-container">
+                    <!-- Upload Section -->
+                    <div id="docUploadSection" class="doc-upload-section">
+                        <div class="upload-area">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h3>Upload Document</h3>
+                            <p class="text-muted">Upload a document to analyze and chat with it</p>
+                            <form id="docAnalyzerUploadForm">
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="docAnalyzerFile" accept=".pdf,.doc,.docx,.txt" required>
+                                    <small class="text-muted">Supported formats: PDF, DOC, DOCX, TXT</small>
+                                </div>
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="docAnalyzerName" placeholder="Document name (optional)">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100" id="docAnalyzerUploadBtn">
+                                    <i class="fas fa-upload me-2"></i>Upload & Analyze
+                                </button>
+                                <div id="docAnalyzerLoading" class="alert alert-info mt-2" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Reading and analyzing document... This may take a moment.
+                                </div>
+                                <div id="docAnalyzerError" class="alert alert-danger mt-2" style="display: none;"></div>
+                                <div id="docAnalyzerSuccess" class="alert alert-success mt-2" style="display: none;"></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Section -->
+                    <div id="docAnalysisSection" class="doc-analysis-section" style="display: none;">
+                        <div class="doc-analysis-header">
+                            <button class="btn btn-sm btn-outline-secondary" id="backToUpload">
+                                <i class="fas fa-arrow-left me-2"></i>Upload New
+                            </button>
+                            <h3 id="docAnalyzerTitle">Document Analysis</h3>
+                        </div>
+
+                        <!-- Search Bar -->
+                        <div class="doc-search-bar mb-3">
+                            <div class="input-group">
+                                <input type="text" id="docAnalyzerSearch" class="form-control" placeholder="Search in document...">
+                                <button class="btn btn-outline-secondary" id="docSearchBtn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Document Summary -->
+                        <div class="doc-summary-section mb-4">
+                            <h5><i class="fas fa-file-alt me-2"></i>Document Summary</h5>
+                            <div id="docSummaryContent" class="doc-content">
+                                <!-- Summary will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Document Topics -->
+                        <div class="doc-topics-section mb-4">
+                            <h5><i class="fas fa-tags me-2"></i>Key Topics</h5>
+                            <div id="docTopicsContent" class="doc-topics">
+                                <!-- Topics will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Chat Section -->
+                        <div class="doc-chat-section">
+                            <h5><i class="fas fa-comments me-2"></i>Chat with Document</h5>
+                            <div id="docAnalyzerChatMessages" class="doc-chat-messages">
+                                <!-- Chat messages will be loaded here -->
+                            </div>
+                            <div class="doc-chat-input mt-3">
+                                <div class="input-group">
+                                    <input type="text" id="docAnalyzerChatInput" class="form-control" placeholder="Ask a question about this document...">
+                                    <button class="btn btn-primary" id="docAnalyzerSendBtn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

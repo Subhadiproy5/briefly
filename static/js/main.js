@@ -93,21 +93,40 @@ class ChatApp {
             this.handlePasswordChange();
         });
 
-        // Document upload button
-        document.getElementById('uploadDocBtn').addEventListener('click', () => {
+        // Document Analyzer menu item
+        document.getElementById('documentAnalyzerMenuItem').addEventListener('click', () => {
             if (!this.isLoggedIn) {
-                this.showError('Please login to upload documents');
+                this.showError('Please login to use Document Analyzer');
                 this.authModal.show();
                 return;
             }
-            this.uploadDocModal.show();
+            this.showDocumentAnalyzer();
         });
 
-        // Upload document form
-        document.getElementById('uploadDocForm').addEventListener('submit', (e) => {
+        // Document Analyzer upload form
+        document.getElementById('docAnalyzerUploadForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            this.handleDocumentUpload();
+            this.handleDocumentAnalyzerUpload();
         });
+
+        // Document Analyzer back to upload
+        document.getElementById('backToUpload').addEventListener('click', () => {
+            this.showDocumentAnalyzerUpload();
+        });
+
+        // Document Analyzer search
+        document.getElementById('docAnalyzerSearch').addEventListener('input', (e) => {
+            this.searchDocumentAnalyzerContent(e.target.value);
+        });
+
+        // Document Analyzer chat
+        document.getElementById('docAnalyzerChatInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendDocumentAnalyzerChat();
+            }
+        });
+        document.getElementById('docAnalyzerSendBtn').addEventListener('click', () => this.sendDocumentAnalyzerChat());
 
         // New chat button
         document.getElementById('newChatBtn').addEventListener('click', () => this.createNewConversation());
@@ -198,8 +217,10 @@ class ChatApp {
         document.getElementById('sidebarLogoutBtn').style.display = 'block';
         document.getElementById('newChatBtn').style.display = 'block';
         document.getElementById('conversationsSection').style.display = 'block';
+        document.getElementById('documentAnalyzerSection').style.display = 'block';
         document.getElementById('profileBtn').style.display = 'block';
         this.chatLimitSection.style.display = 'none';
+        document.getElementById('documentAnalyzerMenuItem').style.display = 'block';
     }
 
     updateUIForLoggedOut() {
@@ -207,9 +228,11 @@ class ChatApp {
         document.getElementById('sidebarLogoutBtn').style.display = 'none';
         document.getElementById('newChatBtn').style.display = 'block';
         document.getElementById('conversationsSection').style.display = 'block';
+        document.getElementById('documentAnalyzerSection').style.display = 'none';
         document.getElementById('profileBtn').style.display = 'none';
         this.chatLimitSection.style.display = 'block';
         this.updateChatLimitDisplay();
+        document.getElementById('documentAnalyzerMenuItem').style.display = 'none';
     }
 
     getFreeChatCount() {
@@ -349,6 +372,10 @@ class ChatApp {
             this.isLoggedIn = false;
             this.userProfile = null;
             this.currentConversationId = null;
+            
+            // Hide document analyzer if visible
+            this.hideDocumentAnalyzer();
+            
             this.hideChatInterface();
             this.updateUIForLoggedOut();
             this.authModal.show();
@@ -358,7 +385,7 @@ class ChatApp {
                     <div class="welcome-icon mb-4">
                         <i class="fas fa-wand-magic-sparkles"></i>
                     </div>
-                    <h2 class="fs-5 fw-600 mb-2 text-dark">Welcome to Gemini Chat</h2>
+                    <h2 class="fs-5 fw-600 mb-2 text-dark">Welcome to Briefly</h2>
                     <p class="mb-0">Ask me anything, and I'll do my best to help</p>
                 </div>
             `;
@@ -729,6 +756,13 @@ class ChatApp {
             this.currentConversationId = conversationId;
             this.saveLastSelectedTab('conversation', conversationId);
             
+            // Hide document analyzer if visible
+            this.hideDocumentAnalyzer();
+            
+            // Show chat interface
+            this.chatContainer.style.display = 'block';
+            this.inputSection.style.display = 'block';
+            
             // Highlight active conversation
             document.querySelectorAll('.conversation-item').forEach(item => {
                 item.classList.remove('active');
@@ -736,6 +770,9 @@ class ChatApp {
                     item.classList.add('active');
                 }
             });
+
+            // Remove highlight from Document Analyzer menu item
+            document.getElementById('documentAnalyzerMenuItem').classList.remove('active');
 
             const response = await fetch(`/api/conversations/${conversationId}/messages`);
             const data = await response.json();
@@ -1008,6 +1045,193 @@ class ChatApp {
 
     scrollToBottom() {
         this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+    }
+
+    // Document Analyzer Functions
+    showDocumentAnalyzer() {
+        // Hide chat interface, show document analyzer
+        this.chatContainer.style.display = 'none';
+        this.inputSection.style.display = 'none';
+        
+        const docAnalyzerView = document.getElementById('documentAnalyzerView');
+        docAnalyzerView.style.display = 'block';
+        
+        // Show upload section by default
+        this.showDocumentAnalyzerUpload();
+        
+        // Keep conversations section visible, just highlight Document Analyzer
+        document.getElementById('conversationsSection').style.display = 'block';
+        document.getElementById('documentAnalyzerSection').style.display = 'block';
+        
+        // Highlight Document Analyzer menu item
+        document.getElementById('documentAnalyzerMenuItem').classList.add('active');
+        
+        // Remove active class from all conversation items
+        document.querySelectorAll('#conversationsList .conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Keep default app name, don't show back button
+        document.getElementById('headerTitle').textContent = 'Briefly AI';
+    }
+
+    showDocumentAnalyzerUpload() {
+        document.getElementById('docUploadSection').style.display = 'block';
+        document.getElementById('docAnalysisSection').style.display = 'none';
+    }
+
+    async handleDocumentAnalyzerUpload() {
+        const fileInput = document.getElementById('docAnalyzerFile');
+        const docName = document.getElementById('docAnalyzerName').value.trim();
+        const errorDiv = document.getElementById('docAnalyzerError');
+        const successDiv = document.getElementById('docAnalyzerSuccess');
+        const loadingDiv = document.getElementById('docAnalyzerLoading');
+        const uploadBtn = document.getElementById('docAnalyzerUploadBtn');
+
+        if (!fileInput.files[0]) {
+            errorDiv.textContent = 'Please select a file';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        if (docName) {
+            formData.append('name', docName);
+        }
+
+        // Show loading state
+        loadingDiv.style.display = 'block';
+        errorDiv.style.display = 'none';
+        successDiv.style.display = 'none';
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+
+        try {
+            const response = await fetch('/api/upload-document', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                successDiv.textContent = `Document "${data.filename}" uploaded and analyzed successfully!`;
+                successDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+                
+                // Save document data and show analysis view
+                this.currentDocument = {
+                    filename: data.filename,
+                    summary: data.summary,
+                    topics: data.topics,
+                    content: data.content
+                };
+                
+                this.showDocumentAnalysis();
+                
+                setTimeout(() => {
+                    successDiv.style.display = 'none';
+                    document.getElementById('docAnalyzerUploadForm').reset();
+                }, 3000);
+            } else {
+                errorDiv.textContent = data.error || 'Failed to upload document';
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Document upload error:', error);
+            errorDiv.textContent = 'Failed to upload document. Please try again.';
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+        } finally {
+            // Hide loading state
+            loadingDiv.style.display = 'none';
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<i class="fas fa-upload me-2"></i>Upload & Analyze';
+        }
+    }
+
+    showDocumentAnalysis() {
+        document.getElementById('docUploadSection').style.display = 'none';
+        document.getElementById('docAnalysisSection').style.display = 'block';
+        
+        const doc = this.currentDocument;
+        const topics = doc.topics ? doc.topics.split(',').map(t => t.trim()) : [];
+        
+        document.getElementById('docAnalyzerTitle').textContent = doc.filename;
+        document.getElementById('docSummaryContent').innerHTML = this.formatMessage(doc.summary);
+        document.getElementById('docTopicsContent').innerHTML = topics.map(topic => 
+            `<span class="badge bg-primary me-2">${this.escapeHtml(topic)}</span>`
+        ).join('');
+        
+        // Clear chat messages
+        document.getElementById('docAnalyzerChatMessages').innerHTML = '';
+    }
+
+    searchDocumentAnalyzerContent(searchTerm) {
+        if (!searchTerm) {
+            document.getElementById('docSummaryContent').innerHTML = this.formatMessage(this.currentDocument.summary);
+            return;
+        }
+        
+        const content = this.currentDocument.summary;
+        const regex = new RegExp(`(${searchTerm})`, 'gi');
+        const highlighted = content.replace(regex, '<span class="search-highlight">$1</span>');
+        document.getElementById('docSummaryContent').innerHTML = this.formatMessage(highlighted);
+    }
+
+    async sendDocumentAnalyzerChat() {
+        const input = document.getElementById('docAnalyzerChatInput');
+        const message = input.value.trim();
+        if (!message) return;
+        
+        const chatMessages = document.getElementById('docAnalyzerChatMessages');
+        
+        // Add user message
+        chatMessages.innerHTML += `<div class="doc-message user"><strong>You:</strong> ${this.escapeHtml(message)}</div>`;
+        input.value = '';
+        
+        try {
+            const response = await fetch('/api/document-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: message,
+                    document_content: this.currentDocument.content,
+                    document_summary: this.currentDocument.summary
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                chatMessages.innerHTML += `<div class="doc-message assistant"><strong>AI:</strong> ${this.formatMessage(data.response)}</div>`;
+            } else {
+                chatMessages.innerHTML += `<div class="doc-message assistant text-danger"><strong>Error:</strong> ${data.error}</div>`;
+            }
+        } catch (error) {
+            console.error('Document chat error:', error);
+            chatMessages.innerHTML += `<div class="doc-message assistant text-danger"><strong>Error:</strong> Failed to get response</div>`;
+        }
+        
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    hideDocumentAnalyzer() {
+        const docAnalyzerView = document.getElementById('documentAnalyzerView');
+        if (docAnalyzerView) {
+            docAnalyzerView.style.display = 'none';
+        }
+        this.chatContainer.style.display = 'block';
+        this.inputSection.style.display = 'block';
+        
+        // Show conversations section in sidebar
+        document.getElementById('conversationsSection').style.display = 'block';
+        document.getElementById('documentAnalyzerSection').style.display = 'block';
+        
+        // Remove highlight from Document Analyzer menu item
+        document.getElementById('documentAnalyzerMenuItem').classList.remove('active');
     }
 }
 

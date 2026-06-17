@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from src.database import init_db, register_user, login_user, create_conversation, get_user_conversations, get_conversation_messages, save_message, delete_conversation, get_user_profile, update_user_profile, change_password, get_db
 from src.rag_system import RAGSystem
+import PyPDF2
+import docx
 
 # Load environment variables from .env file
 load_dotenv()
@@ -54,22 +56,67 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def read_file_content(filepath):
-    """Read content from uploaded file"""
+    """Read content from uploaded file using custom algorithm"""
     try:
         if filepath.endswith('.txt'):
             with open(filepath, 'r', encoding='utf-8') as f:
-                return f.read()
+                content = f.read()
+                return preprocess_text(content)
         elif filepath.endswith('.pdf'):
-            # For PDF, we'll use a simple text extraction
-            # In production, you'd use PyPDF2 or similar
-            return "PDF file uploaded. Content extraction requires additional libraries."
-        elif filepath.endswith('.doc') or filepath.endswith('.docx'):
-            # For Word documents
-            return "Word document uploaded. Content extraction requires additional libraries."
+            return extract_pdf_content(filepath)
+        elif filepath.endswith('.docx'):
+            return extract_docx_content(filepath)
+        elif filepath.endswith('.doc'):
+            return "Old .doc format not supported. Please convert to .docx."
         else:
             return "Unsupported file format"
     except Exception as e:
         return f"Error reading file: {str(e)}"
+
+def preprocess_text(text):
+    """Preprocess text before sending to LLM"""
+    # Remove extra whitespace
+    text = ' '.join(text.split())
+    # Remove special characters that might cause issues
+    text = text.replace('\x00', '').replace('\r\n', '\n')
+    return text
+
+def extract_pdf_content(filepath):
+    """Extract text from PDF using PyPDF2"""
+    try:
+        text = ""
+        with open(filepath, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            num_pages = len(pdf_reader.pages)
+            
+            for page_num in range(num_pages):
+                page = pdf_reader.pages[page_num]
+                text += page.extract_text() + "\n"
+        
+        return preprocess_text(text)
+    except Exception as e:
+        return f"Error extracting PDF content: {str(e)}"
+
+def extract_docx_content(filepath):
+    """Extract text from DOCX using python-docx"""
+    try:
+        doc = docx.Document(filepath)
+        text = ""
+        
+        # Extract paragraphs
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + "\n"
+        
+        # Extract tables if any
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    text += cell.text + " | "
+                text += "\n"
+        
+        return preprocess_text(text)
+    except Exception as e:
+        return f"Error extracting DOCX content: {str(e)}"
 
 
 @app.route('/')
@@ -382,8 +429,14 @@ def upload_document():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        # Read file content
+        # Read file content using custom algorithm
         content = read_file_content(filepath)
+        
+        # Delete the file after reading (no persistence needed)
+        try:
+            os.remove(filepath)
+        except:
+            pass
         
         # Generate summary using AI
         summary_prompt = f"Please provide a concise summary of the following document content:\n\n{content}\n\nSummary:"
@@ -401,8 +454,7 @@ def upload_document():
         )
         topics = topics_response.text
         
-        # Save document info to database (you'll need to create a documents table)
-        # For now, return the data
+        # Return the data without saving to database
         return jsonify({
             'success': True,
             'summary': summary,
@@ -466,7 +518,7 @@ def document_chat():
         if not user_message:
             return jsonify({'error': 'Message cannot be empty'}), 400
         
-        # Use RAG with document context
+        # Use RAG with document context, allowing general knowledge for terms in document
         prompt = f"""Based on the following document information, answer the user's question:
 
 Document Summary:
@@ -477,7 +529,13 @@ Document Content:
 
 User Question: {user_message}
 
-Please provide a helpful answer based on the document content above."""
+IMPORTANT INSTRUCTIONS:
+1. First, check if the question relates to terms, concepts, or topics that are explicitly mentioned in the document.
+2. If the question asks about the meaning or explanation of a term/concept that appears in the document, you may use your general knowledge to explain it, but only if that term is actually present in the document content.
+3. If the question asks about something completely unrelated to the document or terms not mentioned in the document, politely state that this topic is outside the scope of the document.
+4. Provide accurate, helpful answers based on the document content first, then supplement with general knowledge only for terms explicitly mentioned in the document.
+
+Please provide a helpful answer following these guidelines."""
         
         response = client.models.generate_content(
             model=GEMINI_MODEL,
