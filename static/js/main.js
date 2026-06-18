@@ -1,7 +1,12 @@
 // =====================================
 // Chat Application JavaScript
 // =====================================
-
+let loginWidget;
+let registerWidget;
+window.onload = function () {
+    loginWidget = grecaptcha.render('loginRecaptcha');
+    registerWidget = grecaptcha.render('registerRecaptcha');
+};
 class ChatApp {
     constructor() {
         this.chatContainer = document.getElementById('chatContainer');
@@ -305,11 +310,19 @@ class ChatApp {
         const password = document.getElementById('loginPassword').value.trim();
         const errorDiv = document.getElementById('loginError');
 
+        // Get reCAPTCHA response
+        const recaptchaResponse = grecaptcha.getResponse(loginWidget);
+        if (!recaptchaResponse) {
+            errorDiv.textContent = 'Please complete the reCAPTCHA.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
         try {
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, password, recaptcha_response: recaptchaResponse })
             });
 
             const data = await response.json();
@@ -320,16 +333,20 @@ class ChatApp {
                 this.authModal.hide();
                 this.showChatInterface();
                 this.checkAuthStatus();
+                
                 document.getElementById('loginForm').reset();
                 errorDiv.style.display = 'none';
+                grecaptcha.reset();
             } else {
                 errorDiv.textContent = data.error;
                 errorDiv.style.display = 'block';
+                grecaptcha.reset();
             }
         } catch (error) {
             console.error('Login error:', error);
             errorDiv.textContent = 'Login failed. Please try again.';
             errorDiv.style.display = 'block';
+            grecaptcha.reset();
         }
     }
 
@@ -339,30 +356,60 @@ class ChatApp {
         const password = document.getElementById('regPassword').value.trim();
         const errorDiv = document.getElementById('registerError');
 
+        // Get reCAPTCHA response
+        const recaptchaResponse = grecaptcha.getResponse(registerWidget);
+        if (!recaptchaResponse) {
+            errorDiv.textContent = 'Please complete the reCAPTCHA.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
         try {
             const response = await fetch('/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password })
+                body: JSON.stringify({ name, email, password, recaptcha_response: recaptchaResponse })
             });
 
             const data = await response.json();
 
             if (data.success) {
-                this.isLoggedIn = true;
-                this.authModal.hide();
-                this.showChatInterface();
-                this.checkAuthStatus();
-                document.getElementById('registerForm').reset();
+                // Show success message
                 errorDiv.style.display = 'none';
+                const successDiv = document.getElementById('registerSuccess');
+                if (successDiv) {
+                    successDiv.textContent = 'Registration successful! Please login with your credentials.';
+                    successDiv.style.display = 'block';
+                }
+                
+                // Reset form and switch to login tab
+                document.getElementById('registerForm').reset();
+                grecaptcha.reset();
+                
+                // Switch to login tab after 2 seconds
+                setTimeout(() => {
+                    const loginTabBtn = document.querySelector('[data-bs-target="#loginTab"]');
+                    if (loginTabBtn) {
+                        loginTabBtn.click();
+                    }
+                    if (successDiv) {
+                        successDiv.style.display = 'none';
+                    }
+                }, 2000);
             } else {
                 errorDiv.textContent = data.error;
                 errorDiv.style.display = 'block';
+                const successDiv = document.getElementById('registerSuccess');
+                if (successDiv) {
+                    successDiv.style.display = 'none';
+                }
+                grecaptcha.reset();
             }
         } catch (error) {
             console.error('Register error:', error);
             errorDiv.textContent = 'Registration failed. Please try again.';
             errorDiv.style.display = 'block';
+            grecaptcha.reset();
         }
     }
 
@@ -671,6 +718,11 @@ class ChatApp {
 
             if (data.success) {
                 this.displayConversations(data.conversations);
+                
+                // Load the latest conversation if no current conversation selected
+                if (!this.currentConversationId && data.conversations.length > 0) {
+                    this.loadConversation(data.conversations[0].id);
+                }
             }
         } catch (error) {
             console.error('Error loading conversations:', error);
@@ -725,11 +777,18 @@ class ChatApp {
     }
 
     async createNewConversation() {
+        // Show prompt for chat name
+        const chatName = prompt('Enter a name for this chat:');
+        if (!chatName || chatName.trim() === '') {
+            this.showError('Chat name is required');
+            return;
+        }
+
         try {
             const response = await fetch('/api/conversations/new', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+                body: JSON.stringify({ title: chatName.trim() })
             });
 
             const data = await response.json();
@@ -738,7 +797,58 @@ class ChatApp {
                 this.currentConversationId = data.conversation_id;
                 this.clearChat();
                 if (this.isLoggedIn) {
-                    this.loadConversations();
+                    await this.loadConversations();
+                    
+                    // Highlight the newly created conversation
+                    setTimeout(() => {
+                        document.querySelectorAll('.conversation-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (parseInt(item.dataset.id) === data.conversation_id) {
+                                item.classList.add('active');
+                            }
+                        });
+                        
+                        // Remove highlight from Document Analyzer menu item
+                        document.getElementById('documentAnalyzerMenuItem').classList.remove('active');
+                    }, 100);
+                }
+            } else {
+                this.showError(data.error || 'Failed to create conversation');
+            }
+        } catch (error) {
+            console.error('Error creating conversation:', error);
+            this.showError('Failed to create conversation');
+        }
+    }
+
+    async createNewConversationWithName(name) {
+        try {
+            const response = await fetch('/api/conversations/new', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: name })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.currentConversationId = data.conversation_id;
+                this.clearChat();
+                if (this.isLoggedIn) {
+                    await this.loadConversations();
+                    
+                    // Highlight the newly created conversation
+                    setTimeout(() => {
+                        document.querySelectorAll('.conversation-item').forEach(item => {
+                            item.classList.remove('active');
+                            if (parseInt(item.dataset.id) === data.conversation_id) {
+                                item.classList.add('active');
+                            }
+                        });
+                        
+                        // Remove highlight from Document Analyzer menu item
+                        document.getElementById('documentAnalyzerMenuItem').classList.remove('active');
+                    }, 100);
                 }
             } else {
                 this.showError(data.error || 'Failed to create conversation');
@@ -883,7 +993,9 @@ class ChatApp {
 
         // Create conversation if none exists
         if (!this.currentConversationId) {
-            await this.createNewConversation();
+            // Auto-generate conversation name from user message
+            const conversationName = message.length > 50 ? message.substring(0, 50) + '...' : message;
+            await this.createNewConversationWithName(conversationName);
             if (!this.currentConversationId) {
                 this.showError('Failed to create conversation');
                 return;

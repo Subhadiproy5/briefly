@@ -145,7 +145,7 @@ def get_user_conversations(user_id):
     cursor = conn.cursor()
     
     cursor.execute(
-        'SELECT id, title, created_at FROM conversations WHERE user_id = ? ORDER BY updated_at DESC',
+        'SELECT id, title, created_at FROM conversations WHERE user_id = ? ORDER BY created_at DESC',
         (user_id,)
     )
     conversations = cursor.fetchall()

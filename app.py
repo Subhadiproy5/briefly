@@ -8,6 +8,7 @@ from src.database import init_db, register_user, login_user, create_conversation
 from src.rag_system import RAGSystem
 import PyPDF2
 import docx
+import requests
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,6 +18,30 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'doc', 'docx'}
+
+# reCAPTCHA configuration
+RECAPTCHA_SITE_KEY = os.getenv('RECAPTCHA_SITE_KEY', '6LeIxAcTAAAAAJcZVRqyHh71_CIEYQnV5aZTwY7g')  # Test key
+RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')  # Test key
+
+def verify_recaptcha(recaptcha_response):
+    """Verify reCAPTCHA response with Google"""
+    if not recaptcha_response:
+        return False
+    
+    try:
+        response = requests.post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            data={
+                'secret': RECAPTCHA_SECRET_KEY,
+                'response': recaptcha_response
+            },
+            timeout=5
+        )
+        result = response.json()
+        return result.get('success', False)
+    except Exception as e:
+        print(f"reCAPTCHA verification error: {e}")
+        return False
 
 # Ensure upload folder exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -122,7 +147,7 @@ def extract_docx_content(filepath):
 @app.route('/')
 def index():
     """Render the main page"""
-    return render_template('index.html')
+    return render_template('index.html', recaptcha_site_key=RECAPTCHA_SITE_KEY)
 
 
 # ============= AUTHENTICATION ENDPOINTS =============
@@ -135,6 +160,7 @@ def register():
         name = data.get('name', '').strip()
         email = data.get('email', '').strip()
         password = data.get('password', '').strip()
+        recaptcha_response = data.get('recaptcha_response', '')
         
         if not email or not password:
             return jsonify({'success': False, 'error': 'Email and password required'}), 400
@@ -142,12 +168,14 @@ def register():
         if len(password) < 6:
             return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
         
+        # Verify reCAPTCHA
+        if not verify_recaptcha(recaptcha_response):
+            return jsonify({'success': False, 'error': 'reCAPTCHA verification failed'}), 400
+        
         # Use email as username
         username = email
         
         if register_user(username, password, name, email):
-            session['user_id'] = login_user(username, password)
-            session['username'] = username
             return jsonify({'success': True})
         else:
             return jsonify({'success': False, 'error': 'Email already exists'}), 400
@@ -163,9 +191,14 @@ def login():
         data = request.json
         username = data.get('username', '').strip()
         password = data.get('password', '').strip()
+        recaptcha_response = data.get('recaptcha_response', '')
         
         if not username or not password:
             return jsonify({'success': False, 'error': 'Username and password required'}), 400
+        
+        # Verify reCAPTCHA
+        if not verify_recaptcha(recaptcha_response):
+            return jsonify({'success': False, 'error': 'reCAPTCHA verification failed'}), 400
         
         user_id = login_user(username, password)
         
