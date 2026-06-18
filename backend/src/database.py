@@ -159,7 +159,7 @@ def get_conversation_messages(conversation_id):
     cursor = conn.cursor()
     
     cursor.execute(
-        'SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY created_at',
+        'SELECT role, content, created_at FROM messages WHERE conversation_id = ? ORDER BY created_at',
         (conversation_id,)
     )
     messages = cursor.fetchall()
@@ -254,3 +254,119 @@ def change_password(user_id, new_password):
     conn.commit()
     conn.close()
     return True
+
+# ============== Analyzed-document history ==============
+def _ensure_documents_table():
+    conn = get_db(); c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS analyzed_documents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        filename TEXT NOT NULL,
+        display_name TEXT,
+        summary TEXT,
+        topics TEXT,
+        content TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
+    conn.commit(); conn.close()
+
+_ensure_documents_table()
+
+
+def save_analyzed_document(user_id, filename, display_name, summary, topics, content):
+    conn = get_db(); c = conn.cursor()
+    c.execute(
+        'INSERT INTO analyzed_documents (user_id, filename, display_name, summary, topics, content) VALUES (?,?,?,?,?,?)',
+        (user_id, filename, display_name or filename, summary, topics, content)
+    )
+    conn.commit(); doc_id = c.lastrowid; conn.close()
+    return doc_id
+
+
+def list_analyzed_documents(user_id):
+    conn = get_db(); c = conn.cursor()
+    c.execute(
+        'SELECT id, filename, display_name, topics, created_at FROM analyzed_documents WHERE user_id = ? ORDER BY id DESC',
+        (user_id,)
+    )
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return rows
+
+
+def get_analyzed_document(user_id, doc_id):
+    conn = get_db(); c = conn.cursor()
+    c.execute(
+        'SELECT id, user_id, filename, display_name, summary, topics, content, created_at FROM analyzed_documents WHERE id = ? AND user_id = ?',
+        (doc_id, user_id)
+    )
+    row = c.fetchone(); conn.close()
+    return dict(row) if row else None
+
+
+def delete_analyzed_document(user_id, doc_id):
+    conn = get_db(); c = conn.cursor()
+    c.execute('DELETE FROM analyzed_documents WHERE id = ? AND user_id = ?', (doc_id, user_id))
+    n = c.rowcount; conn.commit(); conn.close()
+    return n > 0
+
+
+# ============== Editor drafts (Scribe/Gridly) ==============
+def _ensure_drafts_table():
+    conn = get_db(); c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS editor_drafts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        kind TEXT NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
+    conn.commit(); conn.close()
+
+_ensure_drafts_table()
+
+
+def list_drafts(user_id, kind=None):
+    conn = get_db(); c = conn.cursor()
+    if kind:
+        c.execute('SELECT id, kind, title, updated_at FROM editor_drafts WHERE user_id=? AND kind=? ORDER BY updated_at DESC', (user_id, kind))
+    else:
+        c.execute('SELECT id, kind, title, updated_at FROM editor_drafts WHERE user_id=? ORDER BY updated_at DESC', (user_id,))
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return rows
+
+
+def get_draft(user_id, draft_id):
+    conn = get_db(); c = conn.cursor()
+    c.execute('SELECT id, user_id, kind, title, content, created_at, updated_at FROM editor_drafts WHERE id=? AND user_id=?', (draft_id, user_id))
+    row = c.fetchone(); conn.close()
+    return dict(row) if row else None
+
+
+def create_draft(user_id, kind, title, content):
+    conn = get_db(); c = conn.cursor()
+    c.execute('INSERT INTO editor_drafts (user_id, kind, title, content) VALUES (?,?,?,?)', (user_id, kind, title, content))
+    conn.commit(); did = c.lastrowid; conn.close()
+    return did
+
+
+def update_draft(user_id, draft_id, title=None, content=None):
+    conn = get_db(); c = conn.cursor()
+    fields = []; params = []
+    if title is not None: fields.append('title=?'); params.append(title)
+    if content is not None: fields.append('content=?'); params.append(content)
+    fields.append("updated_at=CURRENT_TIMESTAMP")
+    params += [draft_id, user_id]
+    c.execute(f'UPDATE editor_drafts SET {", ".join(fields)} WHERE id=? AND user_id=?', params)
+    n = c.rowcount; conn.commit(); conn.close()
+    return n > 0
+
+
+def delete_draft(user_id, draft_id):
+    conn = get_db(); c = conn.cursor()
+    c.execute('DELETE FROM editor_drafts WHERE id=? AND user_id=?', (draft_id, user_id))
+    n = c.rowcount; conn.commit(); conn.close()
+    return n > 0
