@@ -18,7 +18,8 @@ from dotenv import load_dotenv
 import requests
 import PyPDF2
 import docx
-from google import genai
+# from google import genai
+from openai import OpenAI
 
 from backend.src.database import (
     init_db, register_user, login_user, create_conversation,
@@ -49,11 +50,18 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 init_db()
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+# GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'openai/gpt-oss-120b:free')
+
 if not GEMINI_API_KEY:
     raise ValueError('GEMINI_API_KEY missing in .env')
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+# client = genai.Client(api_key=GEMINI_API_KEY)
+
+client = OpenAI(
+    api_key=GEMINI_API_KEY,
+    base_url="https://openrouter.ai/api/v1"
+)
 rag_system = RAGSystem(GEMINI_API_KEY, GEMINI_MODEL)
 
 
@@ -998,15 +1006,35 @@ def chat_stream():
                 prompt += f"User: {user_message}\nAssistant:"
 
                 # Use Gemini streaming
-                stream = client.models.generate_content_stream(
+                # stream = client.models.generate_content_stream(
+                #     model=GEMINI_MODEL,
+                #     contents=prompt,
+                # )
+                # for chunk in stream:
+                #     text = getattr(chunk, 'text', None)
+                #     if text:
+                #         full_reply += text
+                #         yield f"data: {json.dumps({'delta': text})}\n\n"
+                stream = client.chat.completions.create(
                     model=GEMINI_MODEL,
-                    contents=prompt,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are Briefly, a helpful assistant."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    stream=True,
                 )
                 for chunk in stream:
-                    text = getattr(chunk, 'text', None)
-                    if text:
-                        full_reply += text
-                        yield f"data: {json.dumps({'delta': text})}\n\n"
+                    if chunk.choices:
+                        delta = chunk.choices[0].delta.content
+                        if delta:
+                            full_reply += delta
+                            yield f"data: {json.dumps({'delta': delta})}\n\n"
         except Exception as e:
             yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
             return

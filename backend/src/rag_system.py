@@ -1,10 +1,20 @@
-from google import genai
+# from google import genai
+from openai import OpenAI
 import os
 
 class RAGSystem:
-    def __init__(self, api_key, model_name='gemini-2.5-flash'):
-        self.client = genai.Client(api_key=api_key)
+    # def __init__(self, api_key, model_name='gemini-2.5-flash'):
+    #     self.client = genai.Client(api_key=api_key)
+    #     self.model_name = model_name
+    def __init__(self, api_key, model_name="openai/gpt-oss-120b:free"):
+
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url="https://openrouter.ai/api/v1"
+        )
+
         self.model_name = model_name
+
         # Context window to maintain conversation history for RAG
         self.conversation_history = []
     
@@ -46,13 +56,23 @@ class RAGSystem:
             full_prompt = self._build_prompt_with_context(messages)
             
             # Generate response
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=full_prompt
-            )
+            # response = self.client.models.generate_content(
+            #     model=self.model_name,
+            #     contents=full_prompt
+            # )
             
-            return response.text
-        
+            # return response.text
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": full_prompt
+                    }
+                ]
+            )
+            return response.choices[0].message.content
+    
         except Exception as e:
             raise Exception(f"Error generating response: {str(e)}")
     
