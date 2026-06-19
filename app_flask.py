@@ -303,16 +303,38 @@ def upload_document():
         try: os.remove(fp)
         except Exception: pass
 
-    summary_resp = client.models.generate_content(
+    # summary_resp = client.models.generate_content(
+    #     model=GEMINI_MODEL,
+    #     contents=f"Summarise this document concisely in 4-6 sentences:\n\n{content[:8000]}"
+    # )
+    # summary = (summary_resp.text or '').strip()
+    summary_resp = client.chat.completions.create(
         model=GEMINI_MODEL,
-        contents=f"Summarise this document concisely in 4-6 sentences:\n\n{content[:8000]}"
+        messages=[
+            {
+                "role": "user",
+                "content": f"Summarise this document concisely in 4-6 sentences:\n\n{content[:8000]}"
+            }
+        ]
     )
-    summary = (summary_resp.text or '').strip()
-    topics_resp = client.models.generate_content(
+
+    summary = summary_resp.choices[0].message.content.strip()
+
+    # topics_resp = client.models.generate_content(
+    #     model=GEMINI_MODEL,
+    #     contents=f"Extract 3-5 short topic labels (comma-separated, no numbering) from this summary:\n\n{summary}"
+    # )
+    # topics = (topics_resp.text or '').strip()
+    topics_resp = client.chat.completions.create(
         model=GEMINI_MODEL,
-        contents=f"Extract 3-5 short topic labels (comma-separated, no numbering) from this summary:\n\n{summary}"
+        messages=[
+            {
+                "role": "user",
+                "content": f"Extract 3-5 short topic labels (comma-separated, no numbering) from this summary:\n\n{summary}"
+            }
+        ]
     )
-    topics = (topics_resp.text or '').strip()
+    topics = topics_resp.choices[0].message.content.strip()
 
     # Persist for history
     display_name = (request.form.get('name') or '').strip() or fn
@@ -341,9 +363,24 @@ DOCUMENT CONTENT:
 USER QUESTION: {msg}
 
 Answer based on the document. If the term appears in the document, you may add a brief general-knowledge explanation. If it's clearly off-topic, say so politely."""
-    resp = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
-    return jsonify({'success': True, 'response': (resp.text or '').strip()})
+    # resp = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
+    # return jsonify({'success': True, 'response': (resp.text or '').strip()})
+    resp = client.chat.completions.create(
+    model=GEMINI_MODEL,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
 
+    answer = resp.choices[0].message.content.strip()
+
+    return jsonify({
+        "success": True,
+        "response": answer
+    })
 
 # =========== DOCUMENT MAKER (NEW) ===========
 DOC_TEMPLATES = {
@@ -385,8 +422,21 @@ def _expand_with_llm(doc_type, data_dict):
             f"Expand the following short prompt into a well-structured {DOC_TEMPLATES.get(doc_type,{}).get('label','document')} "
             f"of about 300-500 words. Return plain text with clear paragraph breaks; do NOT add markdown.\n\nPrompt: {raw}"
         )
-        resp = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
-        return (resp.text or raw).strip()
+        # resp = client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
+        # return (resp.text or raw).strip()
+        resp = client.chat.completions.create(
+            model=GEMINI_MODEL,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        answer = resp.choices[0].message.content
+
+        return (answer or raw).strip()
     except Exception:
         return raw
 
