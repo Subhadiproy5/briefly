@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -8,10 +9,13 @@
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='assets/mylogo.png') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
+
 <body>
     <!-- Auth Modal -->
     <div id="authModal" class="modal fade" tabindex="-1">
@@ -19,20 +23,24 @@
             <div class="modal-content auth-card">
                 <div class="modal-body p-4 p-md-5">
                     <div class="text-center mb-4">
-                       
-                            <img class="brand-mark mb-3" src="{{ url_for('static', filename='assets/mylogo.png') }}" alt="Briefly Logo">
 
-                        
+                        <img class="brand-mark mb-3" src="{{ url_for('static', filename='assets/mylogo.png') }}"
+                            alt="Briefly Logo">
+
+
                         <h3 class="brand-title mb-1">Briefly</h3>
                         <p class="brand-tag mb-0">AI that gets to the point.</p>
                     </div>
 
                     <ul class="nav nav-pills nav-pills-soft mb-4" role="tablist">
                         <li class="nav-item flex-fill" role="presentation">
-                            <button class="nav-link active w-100" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" data-testid="auth-tab-login">Login</button>
+                            <button class="nav-link active w-100" id="login-tab" data-bs-toggle="tab"
+                                data-bs-target="#login" type="button" data-testid="auth-tab-login">Login</button>
                         </li>
                         <li class="nav-item flex-fill" role="presentation">
-                            <button class="nav-link w-100" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" data-testid="auth-tab-register">Register</button>
+                            <button class="nav-link w-100" id="register-tab" data-bs-toggle="tab"
+                                data-bs-target="#register" type="button"
+                                data-testid="auth-tab-register">Register</button>
                         </li>
                     </ul>
 
@@ -41,14 +49,19 @@
                             <form id="loginForm">
                                 <div class="mb-3">
                                     <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="loginUsername" required data-testid="login-email-input">
+                                    <input type="email" class="form-control" id="loginUsername" required
+                                        data-testid="login-email-input">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="loginPassword" required data-testid="login-password-input">
+                                    <input type="password" class="form-control" id="loginPassword" required
+                                        data-testid="login-password-input">
                                 </div>
-                                <div class="mb-3 d-flex justify-content-center"><div class="g-recaptcha" id="loginRecaptcha"></div></div>
-                                <button type="submit" class="btn btn-primary-soft w-100" data-testid="login-submit-btn">Sign in</button>
+                                <div class="mb-3 d-flex justify-content-center">
+                                    <div class="g-recaptcha" id="loginRecaptcha"></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary-soft w-100"
+                                    data-testid="login-submit-btn">Sign in</button>
                                 <div id="loginError" class="alert alert-danger mt-3 mb-0" style="display:none;"></div>
                             </form>
                         </div>
@@ -57,20 +70,28 @@
                             <form id="registerForm">
                                 <div class="mb-3">
                                     <label class="form-label">Name</label>
-                                    <input type="text" class="form-control" id="regName" required data-testid="register-name-input">
+                                    <input type="text" class="form-control" id="regName" required
+                                        data-testid="register-name-input">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="regEmail" required data-testid="register-email-input">
+                                    <input type="email" class="form-control" id="regEmail" required
+                                        data-testid="register-email-input">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Password</label>
-                                    <input type="password" class="form-control" id="regPassword" required data-testid="register-password-input">
+                                    <input type="password" class="form-control" id="regPassword" required
+                                        data-testid="register-password-input">
                                 </div>
-                                <div class="mb-3 d-flex justify-content-center"><div class="g-recaptcha" id="registerRecaptcha"></div></div>
-                                <button type="submit" class="btn btn-primary-soft w-100" data-testid="register-submit-btn">Create account</button>
-                                <div id="registerError" class="alert alert-danger mt-3 mb-0" style="display:none;"></div>
-                                <div id="registerSuccess" class="alert alert-success mt-3 mb-0" style="display:none;"></div>
+                                <div class="mb-3 d-flex justify-content-center">
+                                    <div class="g-recaptcha" id="registerRecaptcha"></div>
+                                </div>
+                                <button type="submit" class="btn btn-primary-soft w-100"
+                                    data-testid="register-submit-btn">Create account</button>
+                                <div id="registerError" class="alert alert-danger mt-3 mb-0" style="display:none;">
+                                </div>
+                                <div id="registerSuccess" class="alert alert-success mt-3 mb-0" style="display:none;">
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -88,15 +109,17 @@
             <div class="sidebar-header">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div class="d-flex align-items-center gap-2">
-                       
-                             <img class="brand-mark brand-mark-sm" src="{{ url_for('static', filename='assets/mylogo.png') }}" alt="Briefly Logo">
-                      
+
+                        <img class="brand-mark brand-mark-sm"
+                            src="{{ url_for('static', filename='assets/mylogo.png') }}" alt="Briefly Logo">
+
                         <div>
                             <div class="sidebar-brand">Briefly</div>
                             <div class="sidebar-sub">AI workspace</div>
                         </div>
                     </div>
-                    <button class="icon-btn d-lg-none" id="closeSidebarBtn" aria-label="Close sidebar"><i class="fas fa-xmark"></i></button>
+                    <button class="icon-btn d-lg-none" id="closeSidebarBtn" aria-label="Close sidebar"><i
+                            class="fas fa-xmark"></i></button>
                 </div>
                 <button class="btn-new-chat" id="newChatBtn" data-testid="new-chat-btn">
                     <i class="fas fa-plus"></i> New chat
@@ -152,19 +175,27 @@
                     <div class="d-flex justify-content-between mb-1">
                         <small>Free chats</small><small id="chatLimitText">0/5</small>
                     </div>
-                    <div class="limit-track"><div id="chatLimitBar" class="limit-fill"></div></div>
+                    <div class="limit-track">
+                        <div id="chatLimitBar" class="limit-fill"></div>
+                    </div>
                 </div>
-                <button class="btn-secondary-soft w-100" id="sidebarLoginBtn" style="display:none;" data-testid="sidebar-login-btn"><i class="fas fa-right-to-bracket me-2"></i>Login</button>
-                <button class="btn-secondary-soft w-100" id="sidebarLogoutBtn" data-testid="sidebar-logout-btn"><i class="fas fa-right-from-bracket me-2"></i>Logout</button>
+                <button class="btn-secondary-soft w-100" id="sidebarLoginBtn" style="display:none;"
+                    data-testid="sidebar-login-btn"><i class="fas fa-right-to-bracket me-2"></i>Login</button>
+                <button class="btn-secondary-soft w-100" id="sidebarLogoutBtn" data-testid="sidebar-logout-btn"><i
+                        class="fas fa-right-from-bracket me-2"></i>Logout</button>
             </div>
         </aside>
 
         <!-- Main -->
         <main class="main-area">
             <header class="topbar">
-                <button class="icon-btn d-lg-none" id="toggleSidebar" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                <button class="icon-btn d-lg-none" id="toggleSidebar" aria-label="Open menu"><i
+                        class="fas fa-bars"></i></button>
                 <h1 class="topbar-title" id="headerTitle">Briefly</h1>
                 <div class="profile-wrap">
+                    <button class="btn-new-chat2" id="newChatBtn2" data-testid="new-chat-btn">
+                       <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
                     <button class="profile-btn" id="profileBtn" data-testid="profile-btn">
                         <span class="avatar"><i class="fas fa-user"></i></span>
                         <span id="username" class="d-none d-sm-inline"></span>
@@ -190,16 +221,21 @@
                         <h2 class="welcome-title">Hello — what shall we tackle?</h2>
                         <p class="welcome-sub">Ask anything. I'll keep it brief.</p>
                         <div class="welcome-chips">
-                            <button class="chip" data-prompt="Summarize quantum entanglement in 3 lines">Explain a concept</button>
-                            <button class="chip" data-prompt="Write a polite email to reschedule a meeting">Draft an email</button>
-                            <button class="chip" data-prompt="Give me 5 startup ideas in climate tech">Brainstorm ideas</button>
+                            <button class="chip" data-prompt="Summarize quantum entanglement in 3 lines">Explain a
+                                concept</button>
+                            <button class="chip" data-prompt="Write a polite email to reschedule a meeting">Draft an
+                                email</button>
+                            <button class="chip" data-prompt="Give me 5 startup ideas in climate tech">Brainstorm
+                                ideas</button>
                         </div>
                     </div>
                 </div>
                 <div class="composer-wrap">
                     <div class="composer">
-                        <textarea id="messageInput" rows="1" placeholder="Ask anything…" data-testid="message-input"></textarea>
-                        <button class="composer-send" id="sendBtn" data-testid="send-btn" aria-label="Send"><i class="fas fa-arrow-up"></i></button>
+                        <textarea id="messageInput" rows="1" placeholder="Ask anything…"
+                            data-testid="message-input"></textarea>
+                        <button class="composer-send" id="sendBtn" data-testid="send-btn" aria-label="Send"><i
+                                class="fas fa-arrow-up"></i></button>
                     </div>
                     <div class="composer-hint">Enter to send · Shift+Enter for new line</div>
                 </div>
@@ -212,12 +248,18 @@
                         <div class="upload-area" id="docDropZone" data-testid="analyzer-drop-zone">
                             <div class="upload-icon"><i class="fas fa-cloud-arrow-up"></i></div>
                             <h3>Upload a document</h3>
-                            <p class="muted">Drop a file here, or click below. PDF, DOCX or TXT — we'll summarise, tag and chat with it.</p>
+                            <p class="muted">Drop a file here, or click below. PDF, DOCX or TXT — we'll summarise, tag
+                                and chat with it.</p>
                             <form id="docAnalyzerUploadForm">
-                                <input type="file" class="form-control mb-3" id="docAnalyzerFile" accept=".pdf,.doc,.docx,.txt" required data-testid="analyzer-file-input">
-                                <input type="text" class="form-control mb-3" id="docAnalyzerName" placeholder="Document name (optional)">
-                                <button type="submit" class="btn-primary-soft w-100" id="docAnalyzerUploadBtn" data-testid="analyzer-upload-btn"><i class="fas fa-upload me-2"></i>Upload & Analyze</button>
-                                <div id="docAnalyzerLoading" class="alert alert-info mt-3" style="display:none;"><i class="fas fa-spinner fa-spin me-2"></i>Analyzing…</div>
+                                <input type="file" class="form-control mb-3" id="docAnalyzerFile"
+                                    accept=".pdf,.doc,.docx,.txt" required data-testid="analyzer-file-input">
+                                <input type="text" class="form-control mb-3" id="docAnalyzerName"
+                                    placeholder="Document name (optional)">
+                                <button type="submit" class="btn-primary-soft w-100" id="docAnalyzerUploadBtn"
+                                    data-testid="analyzer-upload-btn"><i class="fas fa-upload me-2"></i>Upload &
+                                    Analyze</button>
+                                <div id="docAnalyzerLoading" class="alert alert-info mt-3" style="display:none;"><i
+                                        class="fas fa-spinner fa-spin me-2"></i>Analyzing…</div>
                                 <div id="docAnalyzerError" class="alert alert-danger mt-3" style="display:none;"></div>
                             </form>
                         </div>
@@ -225,12 +267,14 @@
 
                     <div id="docAnalysisSection" style="display:none;">
                         <div class="d-flex align-items-center justify-content-between mb-3 gap-2 flex-wrap">
-                            <button class="btn-secondary-soft" id="backToUpload" data-testid="analyzer-back-btn"><i class="fas fa-arrow-left me-2"></i>Upload new</button>
+                            <button class="btn-secondary-soft" id="backToUpload" data-testid="analyzer-back-btn"><i
+                                    class="fas fa-arrow-left me-2"></i>Upload new</button>
                             <h3 id="docAnalyzerTitle" class="mb-0 text-truncate"></h3>
                         </div>
                         <div class="search-box mb-3">
                             <i class="fas fa-magnifying-glass"></i>
-                            <input type="text" id="docAnalyzerSearch" placeholder="Search inside document…" data-testid="analyzer-search-input">
+                            <input type="text" id="docAnalyzerSearch" placeholder="Search inside document…"
+                                data-testid="analyzer-search-input">
                         </div>
                         <div class="card-soft mb-3">
                             <h5><i class="fas fa-file-lines me-2"></i>Summary</h5>
@@ -244,8 +288,10 @@
                             <h5><i class="fas fa-comments me-2"></i>Chat with this document</h5>
                             <div id="docAnalyzerChatMessages" class="doc-chat-messages"></div>
                             <div class="composer composer-inline mt-3">
-                                <input type="text" id="docAnalyzerChatInput" placeholder="Ask a question…" data-testid="analyzer-chat-input">
-                                <button id="docAnalyzerSendBtn" class="composer-send" data-testid="analyzer-chat-send-btn"><i class="fas fa-paper-plane"></i></button>
+                                <input type="text" id="docAnalyzerChatInput" placeholder="Ask a question…"
+                                    data-testid="analyzer-chat-input">
+                                <button id="docAnalyzerSendBtn" class="composer-send"
+                                    data-testid="analyzer-chat-send-btn"><i class="fas fa-paper-plane"></i></button>
                             </div>
                         </div>
                     </div>
@@ -257,7 +303,8 @@
                 <div class="panel">
                     <div class="maker-head">
                         <h3><i class="fas fa-wand-magic-sparkles me-2"></i>Document Maker</h3>
-                        <p class="muted">Generate <b>real</b> .docx, .pdf, .xlsx, .pptx, .txt or .md files from your data.</p>
+                        <p class="muted">Generate <b>real</b> .docx, .pdf, .xlsx, .pptx, .txt or .md files from your
+                            data.</p>
                     </div>
 
                     <!-- Step 1: pick type -->
@@ -278,7 +325,9 @@
                     <div class="card-soft">
                         <h6 class="mb-3">3. Pick a format & download</h6>
                         <div class="format-row" id="formatRow"></div>
-                        <button class="btn-primary-soft w-100 mt-3" id="generateDocBtn" data-testid="maker-generate-btn"><i class="fas fa-download me-2"></i>Generate & Download</button>
+                        <button class="btn-primary-soft w-100 mt-3" id="generateDocBtn"
+                            data-testid="maker-generate-btn"><i class="fas fa-download me-2"></i>Generate &
+                            Download</button>
                         <div id="makerStatus" class="alert mt-3" style="display:none;"></div>
                     </div>
                 </div>
@@ -288,29 +337,43 @@
             <section id="writerView" class="view-section" style="display:none;">
                 <div class="editor-shell">
                     <div class="editor-topbar">
-                        <input type="text" id="writerTitle" class="editor-title" placeholder="Untitled document" value="Untitled" data-testid="scribe-title">
+                        <input type="text" id="writerTitle" class="editor-title" placeholder="Untitled document"
+                            value="Untitled" data-testid="scribe-title">
                         <div class="editor-actions">
-                            <button class="btn-secondary-soft" id="writerNew" data-testid="scribe-new"><i class="fas fa-file-circle-plus me-2"></i>New</button>
-                            <button class="btn-secondary-soft" id="writerSave" data-testid="scribe-save"><i class="fas fa-bookmark me-2"></i>Save draft</button>
+                            <button class="btn-secondary-soft" id="writerNew" data-testid="scribe-new"><i
+                                    class="fas fa-file-circle-plus me-2"></i>New</button>
+                            <button class="btn-secondary-soft" id="writerSave" data-testid="scribe-save"><i
+                                    class="fas fa-bookmark me-2"></i>Save draft</button>
                             <div class="dropdown d-inline-block">
-                                <button class="btn-primary-soft dropdown-toggle" data-bs-toggle="dropdown" data-testid="scribe-export-btn"><i class="fas fa-arrow-down-to-bracket me-2"></i>Export</button>
+                                <button class="btn-primary-soft dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-testid="scribe-export-btn"><i
+                                        class="fas fa-arrow-down-to-bracket me-2"></i>Export</button>
                                 <ul class="dropdown-menu dropdown-menu-end editor-export-menu">
-                                    <li><a class="dropdown-item" href="#" data-fmt="pdf" data-testid="scribe-export-pdf"><i class="fas fa-file-pdf me-2"></i>Download as PDF</a></li>
-                                    <li><a class="dropdown-item" href="#" data-fmt="docx" data-testid="scribe-export-docx"><i class="fas fa-file-word me-2"></i>Download as DOCX</a></li>
-                                    <li><a class="dropdown-item" href="#" data-fmt="doc"><i class="fas fa-file-word me-2"></i>Download as DOC</a></li>
-                                    <li><a class="dropdown-item" href="#" data-fmt="txt"><i class="fas fa-file-lines me-2"></i>Download as TXT</a></li>
+                                    <li><a class="dropdown-item" href="#" data-fmt="pdf"
+                                            data-testid="scribe-export-pdf"><i class="fas fa-file-pdf me-2"></i>Download
+                                            as PDF</a></li>
+                                    <li><a class="dropdown-item" href="#" data-fmt="docx"
+                                            data-testid="scribe-export-docx"><i
+                                                class="fas fa-file-word me-2"></i>Download as DOCX</a></li>
+                                    <li><a class="dropdown-item" href="#" data-fmt="doc"><i
+                                                class="fas fa-file-word me-2"></i>Download as DOC</a></li>
+                                    <li><a class="dropdown-item" href="#" data-fmt="txt"><i
+                                                class="fas fa-file-lines me-2"></i>Download as TXT</a></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                     <div class="editor-tabs">
                         <button class="ed-tab active" data-tab="style"><i class="fas fa-palette me-1"></i>Style</button>
-                        <button class="ed-tab" data-tab="structure"><i class="fas fa-list-tree me-1"></i>Structure</button>
+                        <button class="ed-tab" data-tab="structure"><i
+                                class="fas fa-list-tree me-1"></i>Structure</button>
                         <button class="ed-tab" data-tab="embed"><i class="fas fa-link-simple me-1"></i>Embed</button>
-                        <button class="ed-tab" data-tab="compose"><i class="fas fa-rotate-left me-1"></i>Compose</button>
+                        <button class="ed-tab" data-tab="compose"><i
+                                class="fas fa-rotate-left me-1"></i>Compose</button>
                     </div>
                     <div class="editor-toolbar" id="writerToolbar"></div>
-                    <div id="writerCanvas" class="editor-canvas" contenteditable="true" spellcheck="true" data-testid="scribe-canvas"></div>
+                    <div id="writerCanvas" class="editor-canvas" contenteditable="true" spellcheck="true"
+                        data-testid="scribe-canvas"></div>
                     <div class="editor-status" id="writerStatus"></div>
                 </div>
             </section>
@@ -319,21 +382,31 @@
             <section id="sheetView" class="view-section" style="display:none;">
                 <div class="editor-shell">
                     <div class="editor-topbar">
-                        <input type="text" id="sheetTitle" class="editor-title" placeholder="Untitled sheet" value="Untitled" data-testid="gridly-title">
+                        <input type="text" id="sheetTitle" class="editor-title" placeholder="Untitled sheet"
+                            value="Untitled" data-testid="gridly-title">
                         <div class="editor-actions">
-                            <button class="btn-secondary-soft" id="sheetNew" data-testid="gridly-new"><i class="fas fa-file-circle-plus me-2"></i>New</button>
-                            <button class="btn-secondary-soft" id="sheetSave" data-testid="gridly-save"><i class="fas fa-bookmark me-2"></i>Save draft</button>
+                            <button class="btn-secondary-soft" id="sheetNew" data-testid="gridly-new"><i
+                                    class="fas fa-file-circle-plus me-2"></i>New</button>
+                            <button class="btn-secondary-soft" id="sheetSave" data-testid="gridly-save"><i
+                                    class="fas fa-bookmark me-2"></i>Save draft</button>
                             <div class="dropdown d-inline-block">
-                                <button class="btn-primary-soft dropdown-toggle" data-bs-toggle="dropdown" data-testid="gridly-export-btn"><i class="fas fa-arrow-down-to-bracket me-2"></i>Export</button>
+                                <button class="btn-primary-soft dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-testid="gridly-export-btn"><i
+                                        class="fas fa-arrow-down-to-bracket me-2"></i>Export</button>
                                 <ul class="dropdown-menu dropdown-menu-end editor-export-menu">
-                                    <li><a class="dropdown-item" href="#" data-fmt="xlsx" data-testid="gridly-export-xlsx"><i class="fas fa-file-excel me-2"></i>Download as XLSX</a></li>
-                                    <li><a class="dropdown-item" href="#" data-fmt="csv" data-testid="gridly-export-csv"><i class="fas fa-file-csv me-2"></i>Download as CSV</a></li>
+                                    <li><a class="dropdown-item" href="#" data-fmt="xlsx"
+                                            data-testid="gridly-export-xlsx"><i
+                                                class="fas fa-file-excel me-2"></i>Download as XLSX</a></li>
+                                    <li><a class="dropdown-item" href="#" data-fmt="csv"
+                                            data-testid="gridly-export-csv"><i class="fas fa-file-csv me-2"></i>Download
+                                            as CSV</a></li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                     <div class="editor-tabs">
-                        <button class="ed-tab active" data-tab="cells"><i class="fas fa-paint-roller me-1"></i>Cells</button>
+                        <button class="ed-tab active" data-tab="cells"><i
+                                class="fas fa-paint-roller me-1"></i>Cells</button>
                         <button class="ed-tab" data-tab="grid"><i class="fas fa-table me-1"></i>Grid</button>
                         <button class="ed-tab" data-tab="numbers"><i class="fas fa-hashtag me-1"></i>Numbers</button>
                     </div>
@@ -373,16 +446,22 @@
                 </div>
                 <div class="modal-body">
                     <ul class="nav nav-pills nav-pills-soft mb-3">
-                        <li class="nav-item flex-fill"><button class="nav-link active w-100" data-bs-toggle="tab" data-bs-target="#profileSettings">Profile</button></li>
-                        <li class="nav-item flex-fill"><button class="nav-link w-100" data-bs-toggle="tab" data-bs-target="#passwordSettings">Password</button></li>
+                        <li class="nav-item flex-fill"><button class="nav-link active w-100" data-bs-toggle="tab"
+                                data-bs-target="#profileSettings">Profile</button></li>
+                        <li class="nav-item flex-fill"><button class="nav-link w-100" data-bs-toggle="tab"
+                                data-bs-target="#passwordSettings">Password</button></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade show active" id="profileSettings">
                             <form id="profileForm">
-                                <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" id="profileName" required></div>
-                                <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="profileEmail" disabled></div>
-                                <div class="mb-3"><label class="form-label">Mobile</label><input type="tel" class="form-control" id="profileMobile"></div>
-                                <div class="mb-3"><label class="form-label">Date of Birth</label><input type="date" class="form-control" id="profileDob"></div>
+                                <div class="mb-3"><label class="form-label">Name</label><input type="text"
+                                        class="form-control" id="profileName" required></div>
+                                <div class="mb-3"><label class="form-label">Email</label><input type="email"
+                                        class="form-control" id="profileEmail" disabled></div>
+                                <div class="mb-3"><label class="form-label">Mobile</label><input type="tel"
+                                        class="form-control" id="profileMobile"></div>
+                                <div class="mb-3"><label class="form-label">Date of Birth</label><input type="date"
+                                        class="form-control" id="profileDob"></div>
                                 <button type="submit" class="btn-primary-soft w-100">Save</button>
                                 <div id="profileError" class="alert alert-danger mt-3" style="display:none;"></div>
                                 <div id="profileSuccess" class="alert alert-success mt-3" style="display:none;"></div>
@@ -390,9 +469,12 @@
                         </div>
                         <div class="tab-pane fade" id="passwordSettings">
                             <form id="passwordForm">
-                                <div class="mb-3"><label class="form-label">Current password</label><input type="password" class="form-control" id="currentPassword" required></div>
-                                <div class="mb-3"><label class="form-label">New password</label><input type="password" class="form-control" id="newPassword" required></div>
-                                <div class="mb-3"><label class="form-label">Confirm new password</label><input type="password" class="form-control" id="confirmPassword" required></div>
+                                <div class="mb-3"><label class="form-label">Current password</label><input
+                                        type="password" class="form-control" id="currentPassword" required></div>
+                                <div class="mb-3"><label class="form-label">New password</label><input type="password"
+                                        class="form-control" id="newPassword" required></div>
+                                <div class="mb-3"><label class="form-label">Confirm new password</label><input
+                                        type="password" class="form-control" id="confirmPassword" required></div>
                                 <button type="submit" class="btn-primary-soft w-100">Update password</button>
                                 <div id="passwordError" class="alert alert-danger mt-3" style="display:none;"></div>
                                 <div id="passwordSuccess" class="alert alert-success mt-3" style="display:none;"></div>
@@ -409,4 +491,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
     <script src="/static/js/main.js"></script>
 </body>
+
 </html>

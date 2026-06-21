@@ -18,8 +18,8 @@ window.onload = function () {
     // Wait briefly for site key to be injected then render
     const tryRender = () => {
         if (window.grecaptcha && document.getElementById('loginRecaptcha').dataset.sitekey) {
-            try { loginWidget = grecaptcha.render('loginRecaptcha'); } catch (e) {}
-            try { registerWidget = grecaptcha.render('registerRecaptcha'); } catch (e) {}
+            try { loginWidget = grecaptcha.render('loginRecaptcha'); } catch (e) { }
+            try { registerWidget = grecaptcha.render('registerRecaptcha'); } catch (e) { }
         } else {
             setTimeout(tryRender, 200);
         }
@@ -113,6 +113,7 @@ class ChatApp {
 
         // New chat — auto creates without naming, opens fresh blank state
         document.getElementById('newChatBtn').addEventListener('click', () => this.startNewChat());
+        document.getElementById('newChatBtn2').addEventListener('click', () => this.startNewChat());
 
         // Mobile sidebar
         document.getElementById('toggleSidebar')?.addEventListener('click', () => this.openSidebar());
@@ -226,7 +227,7 @@ class ChatApp {
         const recaptchaResponse = (window.grecaptcha && loginWidget !== null) ? grecaptcha.getResponse(loginWidget) : '';
         if (!recaptchaResponse && recaptchaSiteKey) { err.textContent = 'Please complete the reCAPTCHA.'; err.style.display = 'block'; return; }
         try {
-            const r = await fetch('/api/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ username, password, recaptcha_response: recaptchaResponse }) });
+            const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, recaptcha_response: recaptchaResponse }) });
             const data = await r.json();
             if (data.success) {
                 this.resetFreeChatCount();
@@ -253,7 +254,7 @@ class ChatApp {
         const recaptchaResponse = (window.grecaptcha && registerWidget !== null) ? grecaptcha.getResponse(registerWidget) : '';
         if (!recaptchaResponse && recaptchaSiteKey) { err.textContent = 'Please complete the reCAPTCHA.'; err.style.display = 'block'; return; }
         try {
-            const r = await fetch('/api/register', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password, recaptcha_response: recaptchaResponse }) });
+            const r = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password, recaptcha_response: recaptchaResponse }) });
             const data = await r.json();
             if (data.success) {
                 err.style.display = 'none';
@@ -288,7 +289,7 @@ class ChatApp {
         const err = document.getElementById('profileError');
         const ok = document.getElementById('profileSuccess');
         try {
-            const r = await fetch('/api/profile/update', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, mobile, dob }) });
+            const r = await fetch('/api/profile/update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, mobile, dob }) });
             const data = await r.json();
             if (data.success) { ok.textContent = 'Profile updated!'; ok.style.display = 'block'; err.style.display = 'none'; this.checkAuthStatus(); setTimeout(() => ok.style.display = 'none', 2500); }
             else { err.textContent = data.error || 'Failed'; err.style.display = 'block'; }
@@ -302,7 +303,7 @@ class ChatApp {
         const err = document.getElementById('passwordError'); const ok = document.getElementById('passwordSuccess');
         if (np !== cp) { err.textContent = 'Passwords do not match'; err.style.display = 'block'; ok.style.display = 'none'; return; }
         try {
-            const r = await fetch('/api/profile/change-password', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ current_password: cur, new_password: np }) });
+            const r = await fetch('/api/profile/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ current_password: cur, new_password: np }) });
             const data = await r.json();
             if (data.success) { ok.textContent = 'Password updated!'; ok.style.display = 'block'; err.style.display = 'none'; document.getElementById('passwordForm').reset(); setTimeout(() => ok.style.display = 'none', 2500); }
             else { err.textContent = data.error || 'Failed'; err.style.display = 'block'; ok.style.display = 'none'; }
@@ -508,6 +509,9 @@ class ChatApp {
         return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
     }
 
+    _userChatName() {
+        return 'You';
+    }
     _userDisplayName() {
         return (this.userProfile?.name) || (this.userProfile?.username) || (this.userProfile?.email) || 'You';
     }
@@ -583,7 +587,7 @@ class ChatApp {
                     else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
                 }
                 if (dataLines.length) {
-                    try { events.push({ event: eventName, data: JSON.parse(dataLines.join('\n')) }); } catch (e) {}
+                    try { events.push({ event: eventName, data: JSON.parse(dataLines.join('\n')) }); } catch (e) { }
                 }
             }
             return events;
@@ -599,7 +603,7 @@ class ChatApp {
                 if (ev.event === 'meta') {
                     if (!this.currentConversationId && ev.data.conversation_id) {
                         this.currentConversationId = ev.data.conversation_id;
-                        document.getElementById('headerTitle').textContent = 'AI Chat';
+                        document.getElementById('headerTitle').textContent = 'Briefly';
                         if (this.isLoggedIn) this.loadConversations();
                     }
                 } else if (ev.event === 'error') {
@@ -643,11 +647,11 @@ class ChatApp {
         side.className = 'message-side';
         const label = document.createElement('div');
         label.className = 'message-label';
-        label.textContent = sender === 'user' ? this._userDisplayName() : 'AI';
+        label.textContent = sender === 'user' ? this._userChatName() : 'AI';
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
         if (sender === 'user') avatar.textContent = this._userInitial();
-        else avatar.innerHTML = '<i class="fas fa-sparkles"></i>';
+        else avatar.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
         side.append(label, avatar);
 
         const body = document.createElement('div');
@@ -939,18 +943,48 @@ class ChatApp {
         const input = document.getElementById('docAnalyzerChatInput');
         const msg = input.value.trim(); if (!msg || !this.currentDocument) return;
         const box = document.getElementById('docAnalyzerChatMessages');
-        box.insertAdjacentHTML('beforeend', `<div class="doc-message user"><strong>You:</strong> ${this.escapeHtml(msg)}</div>`);
+        box.insertAdjacentHTML('beforeend', `
+            <div class="text-end">
+                <small class="text-secondary">You</small> 
+
+            </div>
+            <div class="d-flex justify-content-end">
+                <div class="doc-message user d-inline-block">${this.escapeHtml(msg)}</div>
+
+            </div>
+            
+            `);
         input.value = '';
         const thinkingId = 'think-' + Date.now();
-        box.insertAdjacentHTML('beforeend', `<div class="doc-message assistant" id="${thinkingId}"><i class="fas fa-spinner fa-spin me-2"></i>Thinking…</div>`);
+        box.insertAdjacentHTML('beforeend', `
+            <div class="" id="${thinkingId}">
+            <div class="d-flex align-items-center bg-dark text-white p-3 rounded-4 border border-secondary d-inline-block shadow-sm">
+                <div class="position-relative me-3 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                    <div class="spinner-grow text-info position-absolute opacity-50" role="status" style="width: 100%; height: 100%; animation-duration: 2s;"></div>
+                    <div class="spinner-grow text-primary position-absolute" role="status" style="width: 50%; height: 50%; animation-duration: 1.5s;"></div>
+                </div>
+                
+                <div class="d-flex flex-column">
+                    <span class="fw-semibold small text-info-emphasis">Briefly</span>
+                    <span class="text-secondary small">Analyzing your data...</span>
+                </div>
+                </div>
+            `);
         box.scrollTop = box.scrollHeight;
         try {
-            const r = await fetch('/api/document-chat', { method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ message: msg, document_content: this.currentDocument.content, document_summary: this.currentDocument.summary }) });
+            const r = await fetch('/api/document-chat', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg, document_content: this.currentDocument.content, document_summary: this.currentDocument.summary })
+            });
             const data = await r.json();
             document.getElementById(thinkingId)?.remove();
-            if (data.success) box.insertAdjacentHTML('beforeend', `<div class="doc-message assistant"><strong>AI:</strong> ${this.renderMarkdown(data.response || '')}</div>`);
-            else box.insertAdjacentHTML('beforeend', `<div class="doc-message assistant"><strong>Error:</strong> ${this.escapeHtml(data.error||'Failed')}</div>`);
+            if (data.success) box.insertAdjacentHTML('beforeend', `
+                
+                <small class="text-secondary">AI</small><br/>
+                <div class="doc-message assistant d-inline-block"">${this.renderMarkdown(data.response || '')}</div>
+                
+                `);
+            else box.insertAdjacentHTML('beforeend', `<div class="doc-message assistant"><strong>Error:</strong> ${this.escapeHtml(data.error || 'Failed')}</div>`);
         } catch (e) {
             document.getElementById(thinkingId)?.remove();
             box.insertAdjacentHTML('beforeend', `<div class="doc-message assistant"><strong>Error:</strong> Network failure</div>`);
@@ -1007,7 +1041,7 @@ class ChatApp {
             c.innerHTML = `
                 <div class="maker-field-grid">
                     <div class="maker-field"><label>Invoice #</label><input id="f-invoice-number" value="INV-001"></div>
-                    <div class="maker-field"><label>Date</label><input type="date" id="f-date" value="${new Date().toISOString().slice(0,10)}"></div>
+                    <div class="maker-field"><label>Date</label><input type="date" id="f-date" value="${new Date().toISOString().slice(0, 10)}"></div>
                     <div class="maker-field"><label>Currency</label><input id="f-currency" value="$" maxlength="3"></div>
                     <div class="maker-field"><label>Client name</label><input id="f-client-name" placeholder="Acme Inc."></div>
                     <div class="maker-field full"><label>Client address</label><textarea id="f-client-address" rows="2" placeholder="Street, City…"></textarea></div>
@@ -1134,9 +1168,9 @@ class ChatApp {
         const row = document.createElement('div');
         row.className = 'bill-item-row';
         row.innerHTML = `
-            <input class="bi-name" placeholder="Item / service" value="${this.escapeHtml(prefill?.name||'')}">
-            <input class="bi-qty" type="number" min="0" step="1" placeholder="Qty" value="${prefill?.qty||1}">
-            <input class="bi-price" type="number" min="0" step="0.01" placeholder="Price" value="${prefill?.price||0}">
+            <input class="bi-name" placeholder="Item / service" value="${this.escapeHtml(prefill?.name || '')}">
+            <input class="bi-qty" type="number" min="0" step="1" placeholder="Qty" value="${prefill?.qty || 1}">
+            <input class="bi-price" type="number" min="0" step="0.01" placeholder="Price" value="${prefill?.price || 0}">
             <button type="button" class="remove-row"><i class="fas fa-xmark"></i></button>
         `;
         row.querySelector('.remove-row').addEventListener('click', () => row.remove());
@@ -1149,10 +1183,10 @@ class ChatApp {
         block.className = 'section-block';
         block.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <input class="sec-heading form-control" style="background:transparent;border:none;color:var(--text);font-weight:600;padding:0;" placeholder="Section heading" value="${this.escapeHtml(prefill?.heading||'')}">
+                <input class="sec-heading form-control" style="background:transparent;border:none;color:var(--text);font-weight:600;padding:0;" placeholder="Section heading" value="${this.escapeHtml(prefill?.heading || '')}">
                 <button type="button" class="remove-section"><i class="fas fa-trash"></i></button>
             </div>
-            <textarea class="sec-body form-control" rows="3" placeholder="Section body…">${this.escapeHtml(prefill?.body||'')}</textarea>
+            <textarea class="sec-body form-control" rows="3" placeholder="Section body…">${this.escapeHtml(prefill?.body || '')}</textarea>
         `;
         block.querySelector('.remove-section').addEventListener('click', () => block.remove());
         wrap.appendChild(block);
@@ -1270,7 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 // Drafts list (Scribe + Gridly) — attached to ChatApp prototype
 // ============================================================
-ChatApp.prototype.loadDrafts = async function(kind) {
+ChatApp.prototype.loadDrafts = async function (kind) {
     if (!this.isLoggedIn) return;
     try {
         const r = await fetch(`/api/editor/drafts?kind=${kind}`);
@@ -1279,7 +1313,7 @@ ChatApp.prototype.loadDrafts = async function(kind) {
     } catch (e) { console.error('load drafts', kind, e); }
 };
 
-ChatApp.prototype.displayDrafts = function(kind, list) {
+ChatApp.prototype.displayDrafts = function (kind, list) {
     const wrapId = kind === 'text' ? 'textDraftsList' : 'sheetDraftsList';
     const wrap = document.getElementById(wrapId);
     if (!wrap) return;
@@ -1372,7 +1406,7 @@ class ScribeEditor {
 
     cmd(name, value = null) {
         this.canvas.focus();
-        try { document.execCommand(name, false, value); } catch (e) {}
+        try { document.execCommand(name, false, value); } catch (e) { }
     }
 
     renderToolbar() {
@@ -1391,22 +1425,22 @@ class ScribeEditor {
         const sep = () => { const s = document.createElement('div'); s.className = 'tb-sep'; return s; };
 
         if (this.activeTab === 'style') {
-            tb.appendChild(mkBtn('fa-bold', 'Bold (Ctrl+B)', () => this.cmd('bold'), {testid:'scribe-bold'}));
-            tb.appendChild(mkBtn('fa-italic', 'Italic', () => this.cmd('italic'), {testid:'scribe-italic'}));
+            tb.appendChild(mkBtn('fa-bold', 'Bold (Ctrl+B)', () => this.cmd('bold'), { testid: 'scribe-bold' }));
+            tb.appendChild(mkBtn('fa-italic', 'Italic', () => this.cmd('italic'), { testid: 'scribe-italic' }));
             tb.appendChild(mkBtn('fa-underline', 'Underline', () => this.cmd('underline')));
             tb.appendChild(mkBtn('fa-strikethrough', 'Strikethrough', () => this.cmd('strikeThrough')));
             tb.appendChild(sep());
             const fontSel = document.createElement('select');
             fontSel.className = 'tb-select';
-            ['Calibri','Arial','Georgia','Times New Roman','Courier New','Verdana'].forEach(f => {
+            ['Calibri', 'Arial', 'Georgia', 'Times New Roman', 'Courier New', 'Verdana'].forEach(f => {
                 const o = document.createElement('option'); o.value = f; o.textContent = f; fontSel.appendChild(o);
             });
             fontSel.addEventListener('change', () => this.cmd('fontName', fontSel.value));
             tb.appendChild(fontSel);
             const sizeSel = document.createElement('select');
             sizeSel.className = 'tb-select';
-            ['1','2','3','4','5','6','7'].forEach(s => {
-                const o = document.createElement('option'); o.value = s; o.textContent = ['8','10','12','14','18','24','36'][s-1] + 'px'; sizeSel.appendChild(o);
+            ['1', '2', '3', '4', '5', '6', '7'].forEach(s => {
+                const o = document.createElement('option'); o.value = s; o.textContent = ['8', '10', '12', '14', '18', '24', '36'][s - 1] + 'px'; sizeSel.appendChild(o);
             });
             sizeSel.value = '3';
             sizeSel.addEventListener('change', () => this.cmd('fontSize', sizeSel.value));
@@ -1422,8 +1456,8 @@ class ScribeEditor {
             tb.appendChild(bg);
         } else if (this.activeTab === 'structure') {
             const h = (lvl, label) => {
-                const b = mkBtn('fa-heading', label, () => this.cmd('formatBlock', '<h'+lvl+'>'));
-                b.innerHTML = '<span style="font-weight:700;">H'+lvl+'</span>';
+                const b = mkBtn('fa-heading', label, () => this.cmd('formatBlock', '<h' + lvl + '>'));
+                b.innerHTML = '<span style="font-weight:700;">H' + lvl + '</span>';
                 return b;
             };
             tb.appendChild(h(1, 'Heading 1'));
@@ -1446,7 +1480,7 @@ class ScribeEditor {
         } else if (this.activeTab === 'embed') {
             tb.appendChild(mkBtn('fa-link', 'Insert link', () => {
                 const url = prompt('URL:', 'https://'); if (url) this.cmd('createLink', url);
-            }, {testid:'scribe-link'}));
+            }, { testid: 'scribe-link' }));
             tb.appendChild(mkBtn('fa-link-slash', 'Unlink', () => this.cmd('unlink')));
             tb.appendChild(sep());
             tb.appendChild(mkBtn('fa-table', 'Insert 2x2 table', () => {
@@ -1490,10 +1524,10 @@ class ScribeEditor {
         try {
             let r, data;
             if (this.draftId) {
-                r = await fetch(`/api/editor/drafts/${this.draftId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ title, content }) });
+                r = await fetch(`/api/editor/drafts/${this.draftId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, content }) });
                 data = await r.json();
             } else {
-                r = await fetch('/api/editor/drafts', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ kind: 'text', title, content }) });
+                r = await fetch('/api/editor/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'text', title, content }) });
                 data = await r.json();
                 if (data.success) this.draftId = data.id;
             }
@@ -1526,7 +1560,7 @@ class ScribeEditor {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, format: fmt, html })
             });
-            if (!r.ok) { const err = await r.json().catch(()=>({})); throw new Error(err.error || 'HTTP '+r.status); }
+            if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || 'HTTP ' + r.status); }
             const blob = await r.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `${title}.${fmt}`;
@@ -1592,15 +1626,15 @@ class GridlyEditor {
         }
         // Seed if empty
         if (Object.keys(this.sheet.cells).length === 0 && this.sheets.length === 1) {
-            this.setCell(0,0,'Item'); this.setCell(0,1,'Qty'); this.setCell(0,2,'Price'); this.setCell(0,3,'Total');
-            ['Apple','Bread','Milk'].forEach((n,i)=>{
-                this.setCell(i+1,0,n); this.setCell(i+1,1,(i+1)); this.setCell(i+1,2,(i+1)*3);
-                this.setCell(i+1,3, '=B'+(i+2)+'*C'+(i+2));
+            this.setCell(0, 0, 'Item'); this.setCell(0, 1, 'Qty'); this.setCell(0, 2, 'Price'); this.setCell(0, 3, 'Total');
+            ['Apple', 'Bread', 'Milk'].forEach((n, i) => {
+                this.setCell(i + 1, 0, n); this.setCell(i + 1, 1, (i + 1)); this.setCell(i + 1, 2, (i + 1) * 3);
+                this.setCell(i + 1, 3, '=B' + (i + 2) + '*C' + (i + 2));
             });
-            this.setCell(4,0,'Total'); this.setCell(4,3,'=SUM(D2:D4)');
-            this._setCellAttrs(0,0,{bold:true}); this._setCellAttrs(0,1,{bold:true,align:'center'});
-            this._setCellAttrs(0,2,{bold:true,align:'right'}); this._setCellAttrs(0,3,{bold:true,align:'right'});
-            this._setCellAttrs(4,0,{bold:true}); this._setCellAttrs(4,3,{bold:true});
+            this.setCell(4, 0, 'Total'); this.setCell(4, 3, '=SUM(D2:D4)');
+            this._setCellAttrs(0, 0, { bold: true }); this._setCellAttrs(0, 1, { bold: true, align: 'center' });
+            this._setCellAttrs(0, 2, { bold: true, align: 'right' }); this._setCellAttrs(0, 3, { bold: true, align: 'right' });
+            this._setCellAttrs(4, 0, { bold: true }); this._setCellAttrs(4, 3, { bold: true });
         }
         this.renderToolbar();
         this.renderGrid();
@@ -1609,7 +1643,7 @@ class GridlyEditor {
 
     static colName(c) {
         let s = ''; c = c + 1;
-        while (c > 0) { const r = (c - 1) % 26; s = String.fromCharCode(65 + r) + s; c = Math.floor((c - 1)/26); }
+        while (c > 0) { const r = (c - 1) % 26; s = String.fromCharCode(65 + r) + s; c = Math.floor((c - 1) / 26); }
         return s;
     }
     static parseRef(ref) {
@@ -1644,7 +1678,7 @@ class GridlyEditor {
         try {
             let s = expr.startsWith('=') ? expr.slice(1) : expr;
             // Expand functions first (non-nested simple)
-            const funcs = ['SUM','AVG','AVERAGE','MIN','MAX','COUNT','PRODUCT'];
+            const funcs = ['SUM', 'AVG', 'AVERAGE', 'MIN', 'MAX', 'COUNT', 'PRODUCT'];
             let safety = 20;
             while (safety-- > 0) {
                 const m = new RegExp('(' + funcs.join('|') + ')\\(([^()]*)\\)', 'i').exec(s);
@@ -1734,7 +1768,7 @@ class GridlyEditor {
     }
 
     _commitFormulaBar() {
-        const {r, c} = this.active;
+        const { r, c } = this.active;
         this.setCell(r, c, this.formulaInput.value);
         this._recomputeAllFormulas();
         this.renderGrid();
@@ -1774,7 +1808,7 @@ class GridlyEditor {
         this.active = { r: 0, c: 0 };
         this.renderGrid(); this.renderSheetTabs();
         this.cellRef.textContent = 'A1';
-        this.formulaInput.value = this.getCell(0,0).formula || this.getCell(0,0).value || '';
+        this.formulaInput.value = this.getCell(0, 0).formula || this.getCell(0, 0).value || '';
     }
 
     setStatus(msg) {
@@ -1821,13 +1855,13 @@ class GridlyEditor {
         const sep = () => { const s = document.createElement('div'); s.className = 'tb-sep'; return s; };
 
         if (this.activeTab === 'cells') {
-            tb.appendChild(mkBtn('fa-bold', 'Bold', () => this._toggleActive('bold'), {testid:'gridly-bold'}));
+            tb.appendChild(mkBtn('fa-bold', 'Bold', () => this._toggleActive('bold'), { testid: 'gridly-bold' }));
             tb.appendChild(mkBtn('fa-italic', 'Italic', () => this._toggleActive('italic')));
             tb.appendChild(mkBtn('fa-underline', 'Underline', () => this._toggleActive('underline')));
             tb.appendChild(sep());
             // Font size
             const sizeSel = document.createElement('select'); sizeSel.className = 'tb-select'; sizeSel.title = 'Font size';
-            [10,11,12,13,14,16,18,22,28].forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n + 'px'; sizeSel.appendChild(o); });
+            [10, 11, 12, 13, 14, 16, 18, 22, 28].forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n + 'px'; sizeSel.appendChild(o); });
             sizeSel.value = (this.getCell(this.active.r, this.active.c).fontSize) || 13;
             sizeSel.addEventListener('change', () => this._setActive('fontSize', parseInt(sizeSel.value, 10)));
             tb.appendChild(sizeSel);
@@ -1852,11 +1886,11 @@ class GridlyEditor {
             tb.appendChild(mkBtn('fa-link', 'Make cell a hyperlink', () => {
                 const url = prompt('Link URL:', 'https://');
                 if (url) this._setActive('link', url);
-            }, {testid:'gridly-link'}));
+            }, { testid: 'gridly-link' }));
             tb.appendChild(mkBtn('fa-link-slash', 'Remove hyperlink', () => this._setActive('link', null)));
         } else if (this.activeTab === 'grid') {
-            tb.appendChild(mkBtn('fa-plus', 'Add row', () => { this.sheet.rows++; this.renderGrid(); }, {testid:'gridly-add-row'}));
-            tb.appendChild(mkBtn('fa-plus', 'Add column', () => { this.sheet.cols++; this.renderGrid(); }, {testid:'gridly-add-col'}));
+            tb.appendChild(mkBtn('fa-plus', 'Add row', () => { this.sheet.rows++; this.renderGrid(); }, { testid: 'gridly-add-row' }));
+            tb.appendChild(mkBtn('fa-plus', 'Add column', () => { this.sheet.cols++; this.renderGrid(); }, { testid: 'gridly-add-col' }));
             tb.appendChild(sep());
             tb.appendChild(mkBtn('fa-minus', 'Remove last row', () => { if (this.sheet.rows > 1) { this.sheet.rows--; this.renderGrid(); } }));
             tb.appendChild(mkBtn('fa-minus', 'Remove last column', () => { if (this.sheet.cols > 1) { this.sheet.cols--; this.renderGrid(); } }));
@@ -1864,21 +1898,21 @@ class GridlyEditor {
             tb.appendChild(mkBtn('fa-trash', 'Clear all cells', () => { if (confirm('Clear all cells in this sheet?')) { this.sheet.cells = {}; this.renderGrid(); } }));
         } else if (this.activeTab === 'numbers') {
             tb.appendChild(mkBtn('fa-percent', 'Format as %', () => {
-                const {r,c} = this.active; const v = parseFloat(this.getCell(r,c).value);
-                if (!isNaN(v)) { this.setCell(r,c, (v*100).toFixed(0) + '%'); this.renderGrid(); }
+                const { r, c } = this.active; const v = parseFloat(this.getCell(r, c).value);
+                if (!isNaN(v)) { this.setCell(r, c, (v * 100).toFixed(0) + '%'); this.renderGrid(); }
             }));
             tb.appendChild(mkBtn('fa-dollar-sign', 'Format as currency', () => {
-                const {r,c} = this.active; const v = parseFloat(this.getCell(r,c).value);
-                if (!isNaN(v)) { this.setCell(r,c, '$' + v.toFixed(2)); this.renderGrid(); }
+                const { r, c } = this.active; const v = parseFloat(this.getCell(r, c).value);
+                if (!isNaN(v)) { this.setCell(r, c, '$' + v.toFixed(2)); this.renderGrid(); }
             }));
             tb.appendChild(sep());
             // Quick formula buttons that insert formulas
-            const fns = [['SUM','fa-sigma'], ['AVG','fa-chart-line'], ['MIN','fa-down-long'], ['MAX','fa-up-long'], ['COUNT','fa-hashtag']];
+            const fns = [['SUM', 'fa-sigma'], ['AVG', 'fa-chart-line'], ['MIN', 'fa-down-long'], ['MAX', 'fa-up-long'], ['COUNT', 'fa-hashtag']];
             fns.forEach(([fn, icon]) => {
                 const b = document.createElement('button'); b.className = 'tb-btn';
                 b.innerHTML = `<i class="fas ${icon}"></i>`; b.title = `Insert =${fn}() of column above`;
                 b.addEventListener('click', () => {
-                    const {r,c} = this.active;
+                    const { r, c } = this.active;
                     if (r === 0) { this.app.showError('Need cells above to aggregate'); return; }
                     const colL = GridlyEditor.colName(c);
                     const formula = `=${fn}(${colL}1:${colL}${r})`;
@@ -1895,14 +1929,14 @@ class GridlyEditor {
     }
 
     _toggleActive(key) {
-        const {r, c} = this.active;
-        const cell = this.sheet.cells[this.key(r,c)] || (this.sheet.cells[this.key(r,c)] = {});
+        const { r, c } = this.active;
+        const cell = this.sheet.cells[this.key(r, c)] || (this.sheet.cells[this.key(r, c)] = {});
         cell[key] = !cell[key];
         this.renderGrid();
     }
     _setActive(key, val) {
-        const {r, c} = this.active;
-        const cell = this.sheet.cells[this.key(r,c)] || (this.sheet.cells[this.key(r,c)] = {});
+        const { r, c } = this.active;
+        const cell = this.sheet.cells[this.key(r, c)] || (this.sheet.cells[this.key(r, c)] = {});
         if (val === null) delete cell[key]; else cell[key] = val;
         this.renderGrid();
     }
@@ -2006,10 +2040,10 @@ class GridlyEditor {
         try {
             let r, data;
             if (this.draftId) {
-                r = await fetch(`/api/editor/drafts/${this.draftId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ title, content }) });
+                r = await fetch(`/api/editor/drafts/${this.draftId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, content }) });
                 data = await r.json();
             } else {
-                r = await fetch('/api/editor/drafts', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ kind: 'sheet', title, content }) });
+                r = await fetch('/api/editor/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'sheet', title, content }) });
                 data = await r.json();
                 if (data.success) this.draftId = data.id;
             }
@@ -2054,7 +2088,7 @@ class GridlyEditor {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: `${title}_${this.sheet.name}`, format: fmt, rows })
             });
-            if (!r.ok) { const err = await r.json().catch(()=>({})); throw new Error(err.error || 'HTTP '+r.status); }
+            if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || 'HTTP ' + r.status); }
             const blob = await r.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `${title}_${this.sheet.name}.${fmt}`;
